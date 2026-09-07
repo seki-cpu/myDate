@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
-import { useLocale } from "../ui/locale";
-import { localizeExpandedIdea } from "../ui/expandedLocale";
+import { localizeIdea, useLocale } from "../ui/locale";
 
 interface ActivityCardProps {
   idea: DateIdea;
@@ -11,12 +10,12 @@ interface ActivityCardProps {
 
 export function ActivityCard({ idea }: ActivityCardProps) {
   const locale = useLocale();
-  const localizedIdea = localizeExpandedIdea(idea, locale);
+  const localizedIdea = localizeIdea(idea, locale);
 
   return (
     <Link className="activity-card" href={`/result?id=${idea.id}`}>
       <div className="activity-meta">
-        <span className="meta-pill">{idea.category}</span>
+        {idea.categories[0] ? <span className="meta-pill">{idea.categories[0]}</span> : null}
         <span className="meta-pill">{idea.duration}</span>
         <span className="meta-pill">{idea.cost}</span>
       </div>
