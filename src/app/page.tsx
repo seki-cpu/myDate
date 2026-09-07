@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { dateIdeas } from "../data/dateIdeas";
-import { ActivityCard } from "../components/activity/ActivityCard";
+import { HomeIdeaBrowser } from "../components/activity/HomeIdeaBrowser";
 import { MobileShell } from "../components/layout/MobileShell";
 
 const categories = ["Food", "Outdoor", "Indoor", "Creative", "Relaxing"];
@@ -46,20 +46,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {dateIdeas.length > 0 ? (
-          <div className="activity-list">
-            {dateIdeas.map((idea) => (
-              <ActivityCard idea={idea} key={idea.id} />
-            ))}
-          </div>
-        ) : (
-          <div className="empty-card">
-            <h3 className="empty-title">Date ideas are on the way</h3>
-            <p className="empty-copy">
-              The visual experience is ready. Activity cards will appear here as soon as the shared content source is populated.
-            </p>
-          </div>
-        )}
+        <HomeIdeaBrowser ideas={dateIdeas} />
       </section>
     </MobileShell>
   );
