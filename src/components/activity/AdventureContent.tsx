@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
-import { flowCopy, useLocale } from "../ui/locale";
-import { localizeExpandedIdea } from "../ui/expandedLocale";
+import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface AdventureContentProps {
   idea?: DateIdea;
@@ -12,7 +11,7 @@ interface AdventureContentProps {
 export function AdventureContent({ idea }: AdventureContentProps) {
   const locale = useLocale();
   const copy = flowCopy[locale];
-  const localizedIdea = idea ? localizeExpandedIdea(idea, locale) : undefined;
+  const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
 
   return (
     <>
