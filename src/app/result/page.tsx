@@ -19,7 +19,7 @@ export default async function ResultPage({ searchParams }: ResultPageProps) {
       : dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
-    <MobileShell backHref="/" trailingHref="/memories" trailingLabel="Saved">
+    <MobileShell backHref="/">
       <ResultContent idea={idea} />
     </MobileShell>
   );
