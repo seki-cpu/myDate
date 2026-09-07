@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { LanguageMenu } from "../ui/LanguageMenu";
 
 interface MobileShellProps {
   children: ReactNode;
@@ -28,9 +29,12 @@ export function MobileShell({
           </Link>
         )}
 
-        <Link className="section-link" href={trailingHref}>
-          {trailingLabel}
-        </Link>
+        <div className="topbar-actions">
+          <LanguageMenu />
+          <Link className="section-link" href={trailingHref}>
+            {trailingLabel}
+          </Link>
+        </div>
       </header>
       {children}
     </main>
