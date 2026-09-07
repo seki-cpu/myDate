@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-type Locale = "zh" | "en" | "ja";
+import { getStoredLocale, setStoredLocale, type Locale, useLocale } from "./locale";
 
 const localeOptions: Array<{ value: Locale; label: string }> = [
   { value: "zh", label: "中文" },
@@ -10,22 +9,13 @@ const localeOptions: Array<{ value: Locale; label: string }> = [
   { value: "ja", label: "日本語" },
 ];
 
-function detectLocale(): Locale {
-  if (typeof navigator === "undefined") return "en";
-  const language = navigator.language.toLowerCase();
-  if (language.startsWith("zh")) return "zh";
-  if (language.startsWith("ja")) return "ja";
-  return "en";
-}
-
 export function LanguageMenu() {
   const [open, setOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("en");
+  const locale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("mydate-locale") as Locale | null;
-    setLocale(saved === "zh" || saved === "ja" || saved === "en" ? saved : detectLocale());
+    getStoredLocale();
   }, []);
 
   useEffect(() => {
@@ -38,8 +28,7 @@ export function LanguageMenu() {
   }, []);
 
   function selectLocale(nextLocale: Locale) {
-    setLocale(nextLocale);
-    window.localStorage.setItem("mydate-locale", nextLocale);
+    setStoredLocale(nextLocale);
     setOpen(false);
   }
 
@@ -52,7 +41,7 @@ export function LanguageMenu() {
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        <span aria-hidden="true">🌐</span>
+        <span className="language-globe" aria-hidden="true">◎</span>
       </button>
 
       {open ? (
@@ -70,7 +59,6 @@ export function LanguageMenu() {
               {locale === option.value ? <span aria-hidden="true">✓</span> : null}
             </button>
           ))}
-          <p className="language-note">Full translated activity copy will activate after the shared localization model is approved.</p>
         </div>
       ) : null}
     </div>
