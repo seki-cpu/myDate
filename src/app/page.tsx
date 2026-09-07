@@ -6,8 +6,6 @@ import { MobileShell } from "../components/layout/MobileShell";
 const categories = ["Food", "Outdoor", "Indoor", "Creative", "Relaxing"];
 
 export default function HomePage() {
-  const featuredIdeas = dateIdeas.slice(0, 3);
-
   return (
     <MobileShell trailingHref="/egg" trailingLabel="Egg">
       <section>
@@ -48,9 +46,9 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {featuredIdeas.length > 0 ? (
+        {dateIdeas.length > 0 ? (
           <div className="activity-list">
-            {featuredIdeas.map((idea) => (
+            {dateIdeas.map((idea) => (
               <ActivityCard idea={idea} key={idea.id} />
             ))}
           </div>
