@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
-import { flowCopy, useLocale } from "../ui/locale";
-import { localizeExpandedIdea } from "../ui/expandedLocale";
+import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface ResultContentProps {
   idea?: DateIdea;
@@ -12,7 +11,7 @@ interface ResultContentProps {
 export function ResultContent({ idea }: ResultContentProps) {
   const locale = useLocale();
   const copy = flowCopy[locale];
-  const localizedIdea = idea ? localizeExpandedIdea(idea, locale) : undefined;
+  const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
 
   if (!localizedIdea) {
     return (
@@ -33,7 +32,7 @@ export function ResultContent({ idea }: ResultContentProps) {
     <>
       <section className="result-hero">
         <div className="result-number">{copy.resultPick}</div>
-        <p className="eyebrow">{localizedIdea.category}</p>
+        <p className="eyebrow">{localizedIdea.categories[0] ?? ""}</p>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
         <div className="detail-grid">
