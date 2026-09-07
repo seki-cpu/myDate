@@ -12,9 +12,11 @@ interface MobileShellProps {
 export function MobileShell({
   children,
   backHref,
-  trailingHref = "/memories",
-  trailingLabel = "Memories",
+  trailingHref,
+  trailingLabel,
 }: MobileShellProps) {
+  const hasTrailingAction = Boolean(trailingHref && trailingLabel);
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -31,9 +33,11 @@ export function MobileShell({
 
         <div className="topbar-actions">
           <LanguageMenu />
-          <Link className="section-link" href={trailingHref}>
-            {trailingLabel}
-          </Link>
+          {hasTrailingAction ? (
+            <Link className="section-link" href={trailingHref!}>
+              {trailingLabel}
+            </Link>
+          ) : null}
         </div>
       </header>
       {children}
