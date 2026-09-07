@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
-import { localizeIdea, useLocale } from "../ui/locale";
+import { useLocale } from "../ui/locale";
+import { localizeExpandedIdea } from "../ui/expandedLocale";
 
 interface ActivityCardProps {
   idea: DateIdea;
@@ -10,7 +11,7 @@ interface ActivityCardProps {
 
 export function ActivityCard({ idea }: ActivityCardProps) {
   const locale = useLocale();
-  const localizedIdea = localizeIdea(idea, locale);
+  const localizedIdea = localizeExpandedIdea(idea, locale);
 
   return (
     <Link className="activity-card" href={`/result?id=${idea.id}`}>

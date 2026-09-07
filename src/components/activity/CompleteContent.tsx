@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
-import { flowCopy, localizeIdea, localizePhotoPrompt, useLocale } from "../ui/locale";
+import { flowCopy, useLocale } from "../ui/locale";
+import { localizeExpandedIdea, localizeExpandedPhotoPrompt } from "../ui/expandedLocale";
 
 interface CompleteContentProps {
   idea?: DateIdea;
@@ -11,8 +12,8 @@ interface CompleteContentProps {
 export function CompleteContent({ idea }: CompleteContentProps) {
   const locale = useLocale();
   const copy = flowCopy[locale];
-  const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
-  const prompt = idea ? localizePhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
+  const localizedIdea = idea ? localizeExpandedIdea(idea, locale) : undefined;
+  const prompt = idea ? localizeExpandedPhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
 
   return (
     <>
