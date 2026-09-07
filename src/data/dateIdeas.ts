@@ -1,36 +1,49 @@
 import type { DateIdea } from "../types/domain";
 
 /**
- * Canonical V1 date idea source.
+ * Canonical lightweight V1 date idea source.
  *
- * The Date Content Developer owns the records in this file.
- * UI code should consume this source rather than defining independent
- * activity arrays inside components.
- *
- * Note: V1 currently keeps English copy here because DateIdea has not yet
- * been approved for localized fields. Chinese and Japanese copy lives in
- * docs/date-content-v1.md for UI integration after the localization model
- * is approved by the architect.
+ * V1 intentionally ships the first eight fully localized cards.
+ * Additional cards remain content backlog until they are migrated to this
+ * same contract. UI must not maintain a second activity-copy catalog.
  */
 export const dateIdeas: DateIdea[] = [
   {
     id: "sunset-walk",
-    title: "Sunset Walk",
-    description:
-      "Pick a scenic route and walk without a destination. Stop whenever the moment feels right.",
-    category: "romantic",
+    title: {
+      zh: "沿着夕阳散步",
+      en: "Sunset Walk",
+      ja: "夕暮れ散歩",
+    },
+    description: {
+      zh: "找一条风景舒服的路线，不设终点，只一起走到想停下来的时候。",
+      en: "Pick a scenic route and walk without a destination. Stop whenever the moment feels right.",
+      ja: "景色のいい道を、目的地を決めずに歩く。止まりたくなった場所が今日のゴール。",
+    },
+    categories: ["romantic"],
     cost: "free",
     duration: "medium",
     indoor: false,
     tags: ["outdoor", "relaxing", "walk"],
-    photoPrompt: "Take one photo with both of your shoes or shadows in the frame.",
+    photoPrompt: {
+      zh: "拍一张两个人的鞋或影子同时入镜的照片。",
+      en: "Take one photo with both of your shoes or shadows in the frame.",
+      ja: "二人の靴か影が一緒に写る写真を一枚撮る。",
+    },
   },
   {
     id: "one-canvas",
-    title: "One Canvas",
-    description:
-      "Share one canvas and take turns adding colors, shapes, and little things only the two of you understand.",
-    category: "creative",
+    title: {
+      zh: "一起画一幅画",
+      en: "One Canvas",
+      ja: "二人で一枚の絵",
+    },
+    description: {
+      zh: "不要各画各的。共享一张画布，轮流加入颜色、形状和只有你们懂的东西。",
+      en: "Share one canvas and take turns adding colors, shapes, and little things only the two of you understand.",
+      ja: "別々ではなく、一枚のキャンバスを共有。色や形、二人にしかわからないものを自由に足していく。",
+    },
+    categories: ["creative"],
     cost: "low",
     duration: "medium",
     indoor: true,
@@ -38,10 +51,17 @@ export const dateIdeas: DateIdea[] = [
   },
   {
     id: "dance-night",
-    title: "Dance Night",
-    description:
-      "Find a place playing music you both like. No games, no challenges—just dance and enjoy the night.",
-    category: "adventure",
+    title: {
+      zh: "一起去跳舞",
+      en: "Dance Night",
+      ja: "一緒に踊る夜",
+    },
+    description: {
+      zh: "找一家音乐合口味的地方。不玩游戏，不完成挑战，只跟着音乐一起跳。",
+      en: "Find a place playing music you both like. No games, no challenges—just dance and enjoy the night.",
+      ja: "二人とも好きな音楽が流れる場所へ。ゲームも課題もなし。ただ音楽に任せて踊る。",
+    },
+    categories: ["adventure"],
     cost: "medium",
     duration: "long",
     indoor: true,
@@ -49,10 +69,17 @@ export const dateIdeas: DateIdea[] = [
   },
   {
     id: "convenience-store-picnic",
-    title: "Convenience Store Picnic",
-    description:
-      "Pick a few snacks and drinks, then find a park, riverside spot, or quiet bench to share them.",
-    category: "food",
+    title: {
+      zh: "便利店野餐",
+      en: "Convenience Store Picnic",
+      ja: "コンビニピクニック",
+    },
+    description: {
+      zh: "各自挑一点零食和饮料，再找一个舒服的公园、河边或长椅坐下来。",
+      en: "Pick a few snacks and drinks, then find a park, riverside spot, or quiet bench to share them.",
+      ja: "お菓子と飲み物を少し買って、公園や川辺、気持ちのいいベンチへ。",
+    },
+    categories: ["food"],
     cost: "low",
     duration: "short",
     indoor: false,
@@ -60,22 +87,40 @@ export const dateIdeas: DateIdea[] = [
   },
   {
     id: "five-beautiful-things",
-    title: "Find Five Beautiful Things",
-    description:
-      "Wander without a destination and find five things worth stopping to notice.",
-    category: "adventure",
+    title: {
+      zh: "寻找五件漂亮的东西",
+      en: "Find Five Beautiful Things",
+      ja: "きれいなものを5つ探す",
+    },
+    description: {
+      zh: "没有目的地地逛一会儿，一起找到五样值得停下来看的东西。",
+      en: "Wander without a destination and find five things worth stopping to notice.",
+      ja: "目的地を決めずに歩きながら、思わず立ち止まりたくなるものを5つ探す。",
+    },
+    categories: ["adventure"],
     cost: "free",
     duration: "medium",
     indoor: false,
     tags: ["outdoor", "photo", "exploration"],
-    photoPrompt: "Make the final photo include a small part of both of you.",
+    photoPrompt: {
+      zh: "最后一张照片里，让你们两个人的一小部分同时入镜。",
+      en: "Make the final photo include a small part of both of you.",
+      ja: "最後の写真には、二人の一部分を一緒に入れる。",
+    },
   },
   {
     id: "arcade-date",
-    title: "Arcade Date",
-    description:
-      "Race, play rhythm games, try a claw machine—just follow whatever looks fun.",
-    category: "indoor",
+    title: {
+      zh: "电玩城乱玩一晚",
+      en: "Arcade Date",
+      ja: "ゲームセンターデート",
+    },
+    description: {
+      zh: "赛车、音游、抓娃娃，看到什么好玩就玩什么。输赢都不用太认真。",
+      en: "Race, play rhythm games, try a claw machine—just follow whatever looks fun.",
+      ja: "レース、音ゲー、クレーンゲーム。気になったものを自由に遊んでみる。",
+    },
+    categories: ["indoor"],
     cost: "low",
     duration: "medium",
     indoor: true,
@@ -83,10 +128,17 @@ export const dateIdeas: DateIdea[] = [
   },
   {
     id: "cook-something-new",
-    title: "Cook Something New",
-    description:
-      "Choose a recipe neither of you has made before and figure it out together. Success is optional.",
-    category: "food",
+    title: {
+      zh: "一起做一道没做过的菜",
+      en: "Cook Something New",
+      ja: "初めての料理を一緒に作る",
+    },
+    description: {
+      zh: "选一道你们都不会的菜，一边查步骤一边合作。做成功不是重点。",
+      en: "Choose a recipe neither of you has made before and figure it out together. Success is optional.",
+      ja: "二人とも作ったことのない料理を選んで、一緒に試してみる。成功しなくても大丈夫。",
+    },
+    categories: ["food"],
     cost: "low",
     duration: "medium",
     indoor: true,
@@ -94,281 +146,20 @@ export const dateIdeas: DateIdea[] = [
   },
   {
     id: "quiet-reading-date",
-    title: "Quiet Reading Date",
-    description:
-      "Find a cozy café and read your own books side by side. You do not have to keep talking to be together.",
-    category: "relaxing",
+    title: {
+      zh: "安静地一起看书",
+      en: "Quiet Reading Date",
+      ja: "静かな読書デート",
+    },
+    description: {
+      zh: "找一家舒服的咖啡馆，各自看自己的书。不需要一直聊天，也是在约会。",
+      en: "Find a cozy café and read your own books side by side. You do not have to keep talking to be together.",
+      ja: "落ち着くカフェで、それぞれ好きな本を読む。ずっと話さなくても、一緒にいる時間になる。",
+    },
+    categories: ["relaxing"],
     cost: "low",
     duration: "medium",
     indoor: true,
     tags: ["quiet", "cafe", "reading"],
-  },
-  {
-    id: "pottery-for-two",
-    title: "Pottery for Two",
-    description:
-      "Book a pottery session and make something useful, silly, or slightly crooked together.",
-    category: "creative",
-    cost: "medium",
-    duration: "medium",
-    indoor: true,
-    tags: ["workshop", "hands-on", "collaboration"],
-  },
-  {
-    id: "live-music-night",
-    title: "Live Music Night",
-    description:
-      "Pick a small live show or concert and let the music carry the conversation for a while.",
-    category: "romantic",
-    cost: "medium",
-    duration: "long",
-    indoor: true,
-    tags: ["music", "night", "event"],
-  },
-  {
-    id: "aquarium-walk",
-    title: "Aquarium Walk",
-    description:
-      "Walk slowly through an aquarium and spend too long watching whichever creature catches your eye.",
-    category: "relaxing",
-    cost: "medium",
-    duration: "medium",
-    indoor: true,
-    tags: ["quiet", "animals", "slow"],
-  },
-  {
-    id: "breakfast-date",
-    title: "Breakfast Date",
-    description:
-      "Meet earlier than usual and share breakfast while the day still feels new.",
-    category: "food",
-    cost: "low",
-    duration: "short",
-    indoor: true,
-    tags: ["morning", "casual", "cafe"],
-  },
-  {
-    id: "bike-and-breeze",
-    title: "Bike and Breeze",
-    description:
-      "Rent bikes or use your own and ride somewhere with an open view, then stop when you find a good spot.",
-    category: "outdoor",
-    cost: "low",
-    duration: "medium",
-    indoor: false,
-    tags: ["active", "cycling", "scenic"],
-  },
-  {
-    id: "dessert-split",
-    title: "Dessert Split",
-    description:
-      "Choose two desserts neither of you has tried and share both instead of ordering your usual favorites.",
-    category: "food",
-    cost: "low",
-    duration: "short",
-    indoor: true,
-    tags: ["dessert", "casual", "taste"],
-  },
-  {
-    id: "market-wander",
-    title: "Market Wander",
-    description:
-      "Browse a market or street fair with no shopping list and follow whatever smells, looks, or sounds interesting.",
-    category: "adventure",
-    cost: "low",
-    duration: "medium",
-    indoor: false,
-    tags: ["market", "food", "exploration"],
-  },
-  {
-    id: "museum-pick",
-    title: "Museum Pick",
-    description:
-      "Visit a museum or gallery and each choose one piece you would happily take home if you could.",
-    category: "creative",
-    cost: "low",
-    duration: "medium",
-    indoor: true,
-    tags: ["art", "culture", "conversation"],
-  },
-  {
-    id: "mini-road-trip",
-    title: "Mini Road Trip",
-    description:
-      "Choose somewhere close enough for a day trip, make one playlist, and let the ride be part of the date.",
-    category: "adventure",
-    cost: "medium",
-    duration: "long",
-    indoor: false,
-    tags: ["travel", "drive", "day-trip"],
-  },
-  {
-    id: "rainy-day-walk",
-    title: "Rainy Day Walk",
-    description:
-      "Take umbrellas, pick a short route, and enjoy how familiar streets feel different in the rain.",
-    category: "romantic",
-    cost: "free",
-    duration: "short",
-    indoor: false,
-    tags: ["rain", "walk", "cozy"],
-    photoPrompt: "Take one photo of your umbrellas, shoes, or reflections in a puddle.",
-  },
-  {
-    id: "bowling-date",
-    title: "Bowling Date",
-    description:
-      "Play a few relaxed rounds, celebrate lucky shots, and let bad throws be part of the fun.",
-    category: "indoor",
-    cost: "low",
-    duration: "medium",
-    indoor: true,
-    tags: ["active", "playful", "games"],
-  },
-  {
-    id: "grocery-surprise",
-    title: "Grocery Surprise",
-    description:
-      "Go grocery shopping together and each pick one ingredient the other person has to use somehow.",
-    category: "food",
-    cost: "low",
-    duration: "medium",
-    indoor: true,
-    tags: ["home", "playful", "cooking"],
-  },
-  {
-    id: "flower-shop-stop",
-    title: "Flower Shop Stop",
-    description:
-      "Browse a flower shop and each choose one stem or small bloom you genuinely like.",
-    category: "romantic",
-    cost: "low",
-    duration: "short",
-    indoor: true,
-    tags: ["flowers", "casual", "small-gift"],
-  },
-  {
-    id: "photo-booth-date",
-    title: "Photo Booth Date",
-    description:
-      "Find a photo booth and take a set of pictures without overthinking poses or trying to look perfect.",
-    category: "romantic",
-    cost: "low",
-    duration: "short",
-    indoor: true,
-    tags: ["photo", "playful", "memory"],
-    photoPrompt: "Keep one strip or image from the booth as today's memory.",
-  },
-  {
-    id: "board-game-picnic",
-    title: "Board Game Picnic",
-    description:
-      "Bring one easy game outside with snacks and play somewhere you can stay as long as you like.",
-    category: "outdoor",
-    cost: "low",
-    duration: "medium",
-    indoor: false,
-    tags: ["games", "picnic", "casual"],
-  },
-  {
-    id: "karaoke-for-two",
-    title: "Karaoke for Two",
-    description:
-      "Book a small room, queue songs you actually love, and sing badly if that is what happens.",
-    category: "indoor",
-    cost: "low",
-    duration: "medium",
-    indoor: true,
-    tags: ["music", "playful", "night"],
-  },
-  {
-    id: "sunrise-date",
-    title: "Sunrise Date",
-    description:
-      "Wake up unusually early and watch the sky change somewhere with a clear view.",
-    category: "romantic",
-    cost: "free",
-    duration: "medium",
-    indoor: false,
-    tags: ["morning", "outdoor", "scenic"],
-    photoPrompt: "Take one photo of your two shadows after the sun comes up.",
-  },
-  {
-    id: "room-dreaming",
-    title: "Dream Room Browsing",
-    description:
-      "Walk through a furniture or home store and point out what you would choose for your own ideal spaces.",
-    category: "indoor",
-    cost: "free",
-    duration: "medium",
-    indoor: true,
-    tags: ["home", "conversation", "playful"],
-  },
-  {
-    id: "try-each-others-drink",
-    title: "Pick Each Other's Drink",
-    description:
-      "At a café or tea shop, choose a drink for the other person based only on what you think they might enjoy.",
-    category: "food",
-    cost: "low",
-    duration: "short",
-    indoor: true,
-    tags: ["cafe", "taste", "casual"],
-  },
-  {
-    id: "short-hike",
-    title: "Short Hike",
-    description:
-      "Choose an easy route with a view, bring water, and keep the pace comfortable enough to talk.",
-    category: "outdoor",
-    cost: "free",
-    duration: "long",
-    indoor: false,
-    tags: ["active", "nature", "walk"],
-  },
-  {
-    id: "make-a-playlist",
-    title: "Make One Playlist",
-    description:
-      "Take turns adding songs until you have one shared playlist for the day, trip, or season.",
-    category: "creative",
-    cost: "free",
-    duration: "short",
-    indoor: true,
-    tags: ["music", "home", "creative"],
-  },
-  {
-    id: "night-view-stop",
-    title: "Night View Stop",
-    description:
-      "Find a safe viewpoint, bridge, rooftop, or open space and stay long enough to notice the city getting quieter.",
-    category: "romantic",
-    cost: "free",
-    duration: "short",
-    indoor: false,
-    tags: ["night", "scenic", "quiet"],
-  },
-  {
-    id: "bakery-breakfast-pick",
-    title: "Bakery Breakfast Pick",
-    description:
-      "Visit a bakery and each choose one thing for yourself and one thing you think the other person should try.",
-    category: "food",
-    cost: "low",
-    duration: "short",
-    indoor: true,
-    tags: ["bakery", "morning", "casual"],
-  },
-  {
-    id: "tiny-time-capsule",
-    title: "Tiny Time Capsule",
-    description:
-      "Save a few small things from today—a receipt, ticket, note, or photo—and keep them together somewhere safe.",
-    category: "creative",
-    cost: "free",
-    duration: "short",
-    indoor: true,
-    tags: ["memory", "keepsake", "quiet"],
-    photoPrompt: "Add one photo from today that includes a small part of both of you.",
   },
 ];
