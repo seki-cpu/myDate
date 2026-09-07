@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getStoredLocale, setStoredLocale, type Locale, useLocale } from "./locale";
+import { setStoredLocale, type Locale, useLocale } from "./locale";
 
 const localeOptions: Array<{ value: Locale; label: string }> = [
   { value: "zh", label: "中文" },
@@ -13,10 +13,6 @@ export function LanguageMenu() {
   const [open, setOpen] = useState(false);
   const locale = useLocale();
   const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    getStoredLocale();
-  }, []);
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -41,7 +37,10 @@ export function LanguageMenu() {
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        <span className="language-globe" aria-hidden="true">◎</span>
+        <svg className="language-globe" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.4 5.1 3.4 8.5S14.2 18.2 12 20.5M12 3.5C9.8 5.8 8.6 8.6 8.6 12s1.2 6.2 3.4 8.5" />
+        </svg>
       </button>
 
       {open ? (
