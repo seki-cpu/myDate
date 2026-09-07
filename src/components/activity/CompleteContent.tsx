@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
-import { flowCopy, useLocale } from "../ui/locale";
-import { localizeExpandedIdea, localizeExpandedPhotoPrompt } from "../ui/expandedLocale";
+import { flowCopy, localizeIdea, localizePhotoPrompt, useLocale } from "../ui/locale";
 
 interface CompleteContentProps {
   idea?: DateIdea;
@@ -12,8 +11,8 @@ interface CompleteContentProps {
 export function CompleteContent({ idea }: CompleteContentProps) {
   const locale = useLocale();
   const copy = flowCopy[locale];
-  const localizedIdea = idea ? localizeExpandedIdea(idea, locale) : undefined;
-  const prompt = idea ? localizeExpandedPhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
+  const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
+  const prompt = idea ? localizePhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
 
   return (
     <>
@@ -37,8 +36,7 @@ export function CompleteContent({ idea }: CompleteContentProps) {
       </section>
 
       <div className="action-stack">
-        <Link className="primary-button" href="/memories">{copy.saveMemory}</Link>
-        <Link className="secondary-button" href="/">{copy.maybeLater}</Link>
+        <Link className="primary-button" href="/">{copy.maybeLater}</Link>
       </div>
     </>
   );
