@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
+import { getCategoryLabel } from "../ui/categoryLabel";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface ResultContentProps {
@@ -12,6 +13,7 @@ export function ResultContent({ idea }: ResultContentProps) {
   const locale = useLocale();
   const copy = flowCopy[locale];
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
+  const primaryCategory = localizedIdea?.categories[0];
 
   if (!localizedIdea) {
     return (
@@ -32,7 +34,7 @@ export function ResultContent({ idea }: ResultContentProps) {
     <>
       <section className="result-hero">
         <div className="result-number">{copy.resultPick}</div>
-        <p className="eyebrow">{localizedIdea.categories[0] ?? ""}</p>
+        <p className="eyebrow">{primaryCategory ? getCategoryLabel(primaryCategory, locale) : ""}</p>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
         <div className="detail-grid">
