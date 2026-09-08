@@ -42,6 +42,8 @@ export interface DateIdea {
 
 export type MemoryPromptStatus = "pending" | "completed" | "skipped";
 
+export type DateRating = 1 | 2 | 3 | 4 | 5;
+
 export interface XpAwardState {
   adventure: boolean;
   memoryPrompt: boolean;
@@ -59,6 +61,7 @@ export interface AdventureRecord {
   completedAt?: string;
   memoryPromptStatus: MemoryPromptStatus;
   memoryPromptResolvedAt?: string;
+  rating?: DateRating;
   ratingCompletedAt?: string;
   xpAwarded: XpAwardState;
 }
