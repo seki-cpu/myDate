@@ -2,85 +2,92 @@
 
 Date: 2026-09-08
 Release branch: `release/v1`
+Release mode: **Lightweight Beta**
 Change: `MD-002 Reward Burst to Egg`
 Source PR: #10 `UI: MD-002 reward burst to Egg`
 Architect contract commit on `develop`: `83a9c2c5cca4df7ef0b2143cb821c2ea57276546`
 PR #10 merge commit on `develop`: `b9cff53417e7b8536d17818571dab07cf0464806`
+Release build fix: `149ba51ef6e9229940cdd2faabbad1e28553b8fa`
 
 ## Overall Decision
 
-**BLOCKED FOR FINAL RELEASE — INTEGRATION PASS**
+**APPROVED FOR LIGHTWEIGHT BETA MERGE TO `master`**
 
-PR #10 passed Architect contract/integration review and QA static integration review and was merged into `develop`. `release/v1` was refreshed from that approved develop state while preserving release-only QA fixes.
+This is not final GA approval. The current release candidate has passed architecture/integration review, QA static review, TypeScript typecheck, and Next.js production build. The product owner explicitly chose to ship a lightweight beta before the full mobile/runtime/production smoke matrix is complete.
 
-A later V1 Egg presentation simplification was applied directly to `release/v1`: visible Egg XP totals, progress bars, stage labels, crack visuals, and hatch visuals are hidden in V1. The underlying XP settlement, derived progression state, 100-XP hatch threshold, storage contract, and shared Egg reward target remain unchanged.
+Known remaining GA gates are documented below and must still be completed before calling the release fully production-verified.
 
-No known code-level blocker remains from static review. Final release is still blocked on runtime/build/deployment gates.
+## Build Evidence
 
-## Integration Evidence
+A release-only GitHub Actions workflow now runs:
+
+- dependency install with the locked pnpm version
+- `pnpm typecheck`
+- `pnpm build`
+
+The first run exposed one real TypeScript narrowing issue in `ResultContent.tsx`. That release blocker was fixed without changing behavior by capturing the selected `ideaId` after the existing null guard.
+
+The second run on commit `149ba51ef6e9229940cdd2faabbad1e28553b8fa` passed both TypeScript typecheck and the Next.js production build.
+
+## Integrated V1 Scope
 
 Confirmed in the current release candidate:
 
-- `startAdventure(dateId)` creates a unique `adventureId`.
-- Adventure completion uses `completeAdventure(adventureId)` and grants +20 through the canonical exactly-once award flag.
-- Memory Prompt `I got it` calls `resolveMemoryPrompt(adventureId, "completed")` before modal/animation and grants +5 exactly once.
-- `Skip` resolves Memory Prompt as skipped, grants 0 Memory Prompt XP, and continues to Rating.
-- Modal confirmation and reward animation do not write XP.
-- Rating remains tied to the same `adventureId`, has a visible selected state, and uses `completeRating(adventureId, rating)` for exactly-once +5 XP.
-- Refresh/interruption after Memory Prompt resolution reconstructs business state from persisted AdventureRecord and continues to Rating.
-- `EggMiniProgress` remains hydration-safe and still reads canonical derived Egg state after mount.
-- Reward stars still target the shared `[data-egg-mini-target]`.
-- Reward arrival still triggers the Egg mini bump/glow response.
-- Internal Egg progression still derives from canonical `getEggProgress(loadSaveData())` with the same dormant / warming / glowing / cracking / hatched thresholds and 100-XP hatch threshold.
-- V1 intentionally hides Egg XP totals, progress bars, stage labels, crack visuals, and hatch visuals from the user.
-- Reduced-motion presentation remains implemented.
-- Shared `src/lib/storage.ts` and `src/types/domain.ts` were not changed by the Egg presentation simplification.
+- 32 localized Date Ideas in zh / en / ja
+- localized Memory Prompt on every V1 DateIdea
+- no photo upload, photo storage, photo verification, or backend
+- unique `adventureId` per started date
+- Adventure completion settles +20 XP exactly once
+- Memory Prompt `I got it` settles +5 XP exactly once before reward presentation
+- Memory Prompt `Skip` settles 0 Memory Prompt XP and continues to Rating
+- reward modal + champagne-gold star burst targets the shared Egg mini
+- reward animation itself never writes XP
+- Rating remains tied to the same `adventureId` and settles +5 XP exactly once
+- Egg internal progression derives from canonical persisted XP state
+- V1 intentionally hides visible Egg XP totals, progress bars, stage labels, cracking, and hatch visuals
+- Egg mini remains the canonical reward target and still reacts with bump/glow
+- reduced-motion reward behavior remains implemented
+- Adventure back navigation preserves the selected DateIdea
+- category / duration / cost metadata remain localized
 
-## Release-only Fixes Preserved
+## MD-002 Regression Status
 
-- Adventure top-bar back navigation preserves selected DateIdea id.
-- Activity Card category / duration / cost metadata remain localized.
-- Result category metadata remains localized.
-- Shared category labels remain in `src/components/ui/categoryLabel.ts`.
+| # | Check | Status |
+|---|---|---|
+| 1 | `I got it` shows reward modal | PASS (static) |
+| 2 | Modal copy readable on mobile | PENDING runtime smoke |
+| 3 | `OK` starts reward animation | PASS (static) |
+| 4 | Stars travel toward shared Egg mini | PASS (static), runtime timing pending |
+| 5 | Egg mini reacts on arrival | PASS (static), runtime timing pending |
+| 6 | Flow continues to Rating | PASS (static) |
+| 7 | `I got it` grants exactly +5 XP | PASS (logic) |
+| 8 | `I got it` cannot grant twice | PASS (logic) |
+| 9 | Repeated `OK` cannot duplicate XP | PASS (logic) |
+| 10 | Refresh during reward cannot duplicate XP | PASS (logic), runtime pending |
+| 11 | Back navigation cannot duplicate XP | PASS (logic), runtime pending |
+| 12 | Visual replay cannot replay XP | PASS (logic) |
+| 13 | Internal Egg state matches saved XP | PASS (logic), runtime pending |
+| 14 | Effect remains subtle | PASS (static) |
+| 15 | Champagne-like star color | PASS (static) |
+| 16 | Supported mobile sizes | PENDING runtime smoke |
+| 17 | No control-blocking overlap | PENDING runtime smoke |
+| 18 | Reduced motion | PASS (static), runtime pending |
+| 19 | Rapid interaction console safety | PENDING runtime smoke |
+| 20 | Skip still works | PASS (static) |
+| 21 | Rating follows reward flow | PASS (static), runtime pending |
+| 22 | Adventure → Complete → Memory Prompt → Rating → XP | PASS (static), runtime pending |
+| 23 | Internal 100-XP hatch state remains correct | PASS (logic), runtime pending |
+| 24 | localStorage persistence contract | PASS (logic), runtime pending |
 
-## MD-002 Regression Matrix
+## Lightweight Egg Scope
 
-| # | Check | Status | Notes |
-|---|---|---|---|
-| 1 | `I got it` shows reward modal | PASS (static) | State transition is wired. |
-| 2 | Modal copy readable on mobile | BLOCKED | Runtime viewport smoke pending. |
-| 3 | `OK` starts reward animation | PASS (static) | `modal -> animating` is wired. |
-| 4 | Stars travel toward shared Egg mini | PASS (static) / runtime pending | Shared target selector is preserved. |
-| 5 | Shared Egg reacts on arrival | PASS (static) / runtime pending | Reward event still triggers bump/glow. |
-| 6 | Flow continues correctly after animation | PASS (static) | Routes to Rating with same `adventureId`. |
-| 7 | `I got it` grants exactly +5 XP | PASS (logic) | Canonical award flag contributes +5. |
-| 8 | `I got it` cannot grant +5 twice | PASS (logic) | Settlement is idempotent per `adventureId`. |
-| 9 | Repeated `OK` does not duplicate XP | PASS (logic) | OK/animation have no XP write path. |
-| 10 | Refresh during reward does not duplicate XP | PASS (logic) / runtime pending | XP settles before animation; resolved state resumes at Rating. |
-| 11 | Back navigation does not duplicate XP | PASS (logic) / runtime pending | Navigation does not settle XP. |
-| 12 | Visual replay cannot replay XP | PASS (logic) | Presentation layer has no settlement path. |
-| 13 | Internal Egg progress matches saved XP | PASS (logic) / runtime pending | Derived state remains canonical; visible progress is intentionally hidden. |
-| 14 | Effect remains subtle | PASS (static) | Five small stars and brief timing. |
-| 15 | Warm champagne-like star color | PASS (static) | Light warm-gold palette retained. |
-| 16 | Works on supported mobile sizes | BLOCKED | Runtime smoke pending. |
-| 17 | No overlap blocks controls | BLOCKED | Runtime smoke pending. |
-| 18 | Reduced motion usable | PASS (static) / runtime pending | Reduced-motion path exists. |
-| 19 | No console errors during rapid interaction | BLOCKED | Runtime/console evidence pending. |
-| 20 | Skip still works | PASS (static) | Skip resolves with 0 Memory XP and enters Rating. |
-| 21 | Rating works after reward | PASS (static) / runtime pending | Same adventure continuity and visible selected state are wired. |
-| 22 | Adventure → Complete → Memory Prompt → Rating → XP intact | PASS (static) / runtime pending | Same `adventureId` is propagated. |
-| 23 | Internal Egg progression / 100-XP hatch state remains correct | PASS (logic) / runtime pending | Visible hatch UI is intentionally out of V1 scope. |
-| 24 | localStorage persistence correct | PASS (logic) / runtime pending | Canonical v2 storage and award flags remain unchanged. |
+V1 shows:
 
-## V1 Egg Presentation Scope
-
-Visible progression is intentionally deferred. V1 shows:
-
-- the Egg mini icon as the canonical reward target
-- a brief reward-arrival bump/glow
+- the Egg mini icon
+- the reward-arrival bump/glow
 - a lightweight Egg detail page
 
-V1 does not show:
+V1 intentionally does not show:
 
 - XP totals
 - progress bars
@@ -88,34 +95,24 @@ V1 does not show:
 - cracking visuals
 - hatch visuals
 
-Internal progression remains active and must still be correct for persistence and future compatibility.
+Internal progression remains active for persistence and future compatibility.
 
-## Required Runtime Coverage
+## Remaining Final-GA Gates
 
-Run the full release candidate on:
+Before calling this release fully production-verified, complete:
 
-- 320 × 568
-- 375 × 812
-- 390 × 844
-- 430 × 932
+- 320 × 568 mobile smoke
+- 375 × 812 mobile smoke
+- 390 × 844 mobile smoke
+- 430 × 932 mobile smoke
+- rapid repeated interaction checks
+- refresh / back / forward runtime persistence checks
+- reduced-motion runtime verification
+- browser console verification
+- deployed production smoke of Home → Result → Adventure → Complete → Memory Prompt → Rating → Home
 
-Verify:
+## Release Decision
 
-- normal motion and reduced motion
-- rapid repeated taps on `I got it`, `OK`, Rating values, and Finish
-- refresh during modal and during star travel
-- browser back/forward around Complete and Rating
-- persisted XP after reload
-- shared Egg target and reward-arrival response
-- internal 25 / 50 / 75 / 100 XP thresholds through persisted state inspection where practical
-- no visible Egg XP/progression/hatch UI leaks into V1
-- no hydration or console errors
-- no horizontal overflow or blocked controls
-- production build and deployment
-- production smoke of Home → Result → Adventure → Complete → Memory Prompt → Rating → Home
+**QA decision for this request: APPROVED FOR LIGHTWEIGHT BETA.**
 
-## Final Release Decision
-
-**BLOCKED** until all runtime/build/deployment gates pass.
-
-Do not merge `release/v1` into `master` yet.
+`release/v1` may be merged into `master` for an early lightweight release. This approval intentionally accepts the documented runtime-smoke gaps and must not be represented as final GA certification.
