@@ -6,6 +6,7 @@ import type { DateRating } from "../../types/domain";
 import { completeRating } from "../../lib/storage";
 import { notifyEggProgressChanged } from "../egg/EggMiniProgress";
 import { useLocale } from "../ui/locale";
+import styles from "./rating.module.css";
 
 interface RatingContentProps {
   adventureId?: string;
@@ -54,20 +55,23 @@ export function RatingContent({ adventureId }: RatingContentProps) {
       <p className="page-copy">{copy.note}</p>
 
       <section className="section">
-        <div className="detail-grid" role="radiogroup" aria-label={copy.title}>
-          {([1, 2, 3, 4, 5] as DateRating[]).map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={rating === value}
-              className="secondary-button"
-              onClick={() => setRating(value)}
-              disabled={submitting}
-            >
-              {value}
-            </button>
-          ))}
+        <div className={styles.ratingGrid} role="radiogroup" aria-label={copy.title}>
+          {([1, 2, 3, 4, 5] as DateRating[]).map((value) => {
+            const selected = rating === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`${styles.ratingButton}${selected ? ` ${styles.selected}` : ""}`}
+                onClick={() => setRating(value)}
+                disabled={submitting}
+              >
+                {value}
+              </button>
+            );
+          })}
         </div>
       </section>
 
