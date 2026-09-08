@@ -44,20 +44,21 @@ export function CompleteContent({ idea }: CompleteContentProps) {
       <p className="eyebrow">{copy.dateComplete}</p>
       <h1 className="page-title">{localizedIdea?.title ?? copy.finishedDate}</h1>
 
-      <section className="memory-prompt-card" aria-labelledby="memory-prompt-title">
-        <div className="memory-prompt-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="img">
-            <path d="M8.5 7.5 10 5.5h4l1.5 2H18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2.5Z" />
-            <circle cx="12" cy="13" r="3.2" />
-          </svg>
+      <section className="section">
+        <div className="prompt-card">
+          <p className="eyebrow">{memoryCopy.eyebrow}</p>
+          <h2 className="activity-title">{memoryCopy.title}</h2>
+          <p>{prompt}</p>
         </div>
-        <p className="eyebrow">{memoryCopy.eyebrow}</p>
-        <h2 className="memory-prompt-title" id="memory-prompt-title">{memoryCopy.title}</h2>
-        <p className="memory-prompt-text">{prompt}</p>
-        <p className="memory-prompt-note">{memoryCopy.note}</p>
       </section>
 
-      <div className="memory-prompt-actions">
+      <section className="section">
+        <div className="info-card">
+          <p className="info-copy">{memoryCopy.note}</p>
+        </div>
+      </section>
+
+      <div className="action-stack">
         <Link className="primary-button" href="/">{memoryCopy.gotIt}</Link>
         <Link className="secondary-button" href="/">{memoryCopy.skip}</Link>
       </div>
