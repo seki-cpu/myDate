@@ -149,6 +149,108 @@ Repeated clicks, refreshes, browser back navigation, or returning to a completed
 
 Total XP is derived from persisted award flags rather than incrementing an unguarded counter.
 
+## MD-002 Reward Burst to Egg
+
+MD-002 adds presentation feedback after a successful Memory Prompt completion.
+
+The product sequence is:
+
+```text
+Memory Prompt
+→ user taps I got it
+→ resolveMemoryPrompt(adventureId, "completed")
+→ reward modal opens
+→ user taps OK
+→ star burst travels toward Egg mini icon
+→ Egg mini icon glows / bumps once
+→ continue to Rating
+```
+
+The reward uses the existing +5 Memory Prompt XP source. MD-002 does **not** create a new XP source.
+
+### SaveData Decision
+
+MD-002 requires **no new SaveData fields**.
+
+Persisted business truth already exists in:
+
+```ts
+memoryPromptStatus
+xpAwarded.memoryPrompt
+```
+
+Reward modal visibility, animation progress, star particle positions, and Egg bump state are transient presentation state and must not be persisted.
+
+Do not add fields such as:
+
+- rewardModalSeen
+- rewardAnimationPlayed
+- rewardAnimationComplete
+- starBurstComplete
+- eggBumpPlayed
+
+Replaying or skipping presentation must never affect XP truth.
+
+### UI State Sequence
+
+The UI-owned state machine is:
+
+```text
+idle
+→ rewardModalOpen
+→ rewardAnimationPlaying
+→ rewardAnimationComplete
+```
+
+Definitions:
+
+- `idle`: Memory Prompt screen is waiting for user action.
+- `rewardModalOpen`: business settlement has already been attempted; reward modal is visible.
+- `rewardAnimationPlaying`: user tapped OK; star burst / Egg absorption feedback is playing.
+- `rewardAnimationComplete`: visual feedback finished or was intentionally skipped; UI may continue to Rating.
+
+This state machine is view-only.
+
+### Business / Presentation Boundary
+
+When the user taps `I got it`:
+
+1. UI calls `resolveMemoryPrompt(adventureId, "completed")`.
+2. The adapter remains the only place that decides whether +5 XP is newly awarded.
+3. The UI may open the reward modal after the call returns.
+4. Animation components receive display data only; they never mutate SaveData or award XP.
+
+The animation must not be the trigger for XP settlement.
+
+If the animation is interrupted, skipped, reduced, or never mounts, persisted XP remains correct.
+
+Refreshing or navigating back may re-render the Memory Prompt step, but the existing idempotency guard prevents duplicate +5 XP.
+
+### Reduced Motion
+
+Respect `prefers-reduced-motion` where feasible.
+
+For reduced motion, replace the traveling star burst with a short static or near-static feedback such as:
+
+- brief +5 XP fade
+- one subtle Egg glow
+- immediate transition after user acknowledgement
+
+Reduced-motion handling must preserve the same business sequence and XP outcome.
+
+### Visual Constraints
+
+MD-002 should use:
+
+- small pale-yellow / champagne-gold stars
+- short duration
+- one directional burst toward the Egg mini icon
+- one Egg glow / bump
+- restrained particle count
+- no arcade-heavy sound or visual treatment
+
+The Egg remains secondary to the activity flow.
+
 ## V1 Persistence Boundary
 
 All V1 adventure progress goes through:
@@ -179,6 +281,8 @@ Egg progress may read derived total XP, but:
 - Egg progress thresholds are a separate product rule
 - no inventory, economy, or collectible system is introduced by this contract
 
+MD-002 may animate toward an Egg mini icon, but that icon is a presentation target only. It must not become an XP authority or navigation requirement.
+
 ## Content Source
 
 Canonical V1 activity content lives in:
@@ -193,6 +297,8 @@ Do not introduce Redux or another global state framework for this flow.
 
 Use the existing localStorage adapter plus local React state where needed.
 
+MD-002 transient states should remain local to the relevant flow container unless a small lifted state is required to coordinate the modal and Egg mini icon.
+
 ## Scope Protection
 
 Do not add:
@@ -205,5 +311,7 @@ Do not add:
 - camera permission requirements
 - duplicate DateIdea DTOs
 - reward service layers or dependency injection
+- persisted animation state
+- animation-driven XP settlement
 
 Add only the minimum code needed to keep the canonical contract, client-side flow state, XP idempotency, and Egg boundary correct.
