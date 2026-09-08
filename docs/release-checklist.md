@@ -4,81 +4,80 @@
 
 - [ ] One canonical `DateIdea` contract is used across types, content, and UI
 - [ ] `photoPrompt` is required and localized on every DateIdea
-- [ ] No legacy `category` field remains in V1 integration points
-- [ ] Localized activity content uses the canonical `LocalizedText` shape
 - [ ] One canonical date content source
 - [ ] No photo URL or image reference exists in the V1 domain model
 - [ ] No backend or cloud image storage is introduced
 - [ ] XP settlement is tied to a unique `adventureId`
+- [ ] Total XP is derived from persisted `xpAwarded` flags
+- [ ] Egg progress is derived from total XP, not persisted separately
 - [ ] Egg state remains separated from DateIdea
-- [ ] MD-002 adds no SaveData fields for animation/modal state
-- [ ] Reward animation components do not own XP or persistence logic
 
-## Product
+## Product Flow
 
-- [ ] User can discover a date idea immediately
-- [ ] Browse activity flow works
-- [ ] Random activity flow works
-- [ ] Date detail is understandable quickly
-- [ ] Start activity creates a unique adventure instance
-- [ ] Complete activity flow works
+- [ ] Browse works
+- [ ] Random works
+- [ ] Date detail works
+- [ ] Start creates a unique adventure instance
+- [ ] Adventure completion works
 - [ ] Memory Prompt appears after completion
-- [ ] `I got it` and `Skip` both continue the flow
-- [ ] `I got it` opens the MD-002 reward modal after settlement is attempted
-- [ ] Reward modal `OK` triggers the star burst toward Egg
-- [ ] Egg mini icon glows / bumps once
-- [ ] Rating remains reachable after reward feedback
-- [ ] XP settlement appears after rating
-- [ ] Egg progress appears after XP settlement
+- [ ] `I got it` and `Skip` both resolve Memory Prompt
+- [ ] MD-002 reward feedback appears after `I got it`
+- [ ] Rating remains the next business step after reward handling or Skip
+- [ ] Rating accepts a private value from 1 to 5
+- [ ] XP settlement reflects completed sources
+- [ ] Egg progress reflects settled XP
 - [ ] Chinese / English / Japanese work across the primary flow
 
-## Memory Prompt
+## Memory Prompt / MD-002
 
-- [ ] Every DateIdea has `photoPrompt.zh`
-- [ ] Every DateIdea has `photoPrompt.en`
-- [ ] Every DateIdea has `photoPrompt.ja`
-- [ ] Prompt suggests a meaningful photo the user can keep in the normal phone gallery
-- [ ] Prompt does not require both people to appear
+- [ ] Every DateIdea has `photoPrompt.zh`, `.en`, and `.ja`
 - [ ] App does not verify whether a photo was actually taken
-- [ ] No upload control exists
-- [ ] No photo storage or photo URL persistence exists
+- [ ] No upload control or image persistence exists
+- [ ] `I got it` commits +5 XP before presentation animation
+- [ ] Reward modal confirmation does not grant XP
+- [ ] Animation start/finish/replay does not grant XP
+- [ ] Reward animation targets the shared Egg mini/progress UI, not a decorative local copy
+- [ ] Interrupted animation still permits continuation to Rating
+- [ ] Reduced-motion users receive a simplified reward acknowledgment
+
+## Rating
+
+- [ ] Rating is tied to the same `adventureId`
+- [ ] Rating cannot settle while Memory Prompt status is `pending`
+- [ ] `Skip` continues to Rating
+- [ ] Submitting a 1–5 rating grants +5 XP exactly once
+- [ ] Changing an already submitted rating does not grant another +5 XP
+- [ ] Refresh/back navigation preserves the submitted rating and settlement state
 
 ## XP / Idempotency
 
-- [ ] Adventure completion grants +20 XP exactly once per `adventureId`
-- [ ] Memory Prompt `I got it` grants +5 XP exactly once per `adventureId`
-- [ ] Memory Prompt `Skip` grants 0 XP for that source
-- [ ] Rating completion grants +5 XP exactly once per `adventureId`
-- [ ] Refresh does not duplicate XP
-- [ ] Back navigation does not duplicate XP
-- [ ] Repeating the same action does not duplicate XP
-- [ ] Replaying MD-002 reward presentation does not duplicate XP
-- [ ] Interrupting MD-002 reward animation does not lose XP
-- [ ] Starting the same DateIdea again creates a new `adventureId` and can earn XP normally
-- [ ] Total XP is derived consistently from persisted award state
+- [ ] Adventure completion grants +20 exactly once per `adventureId`
+- [ ] Memory Prompt `I got it` grants +5 exactly once per `adventureId`
+- [ ] Memory Prompt `Skip` grants 0 for that source
+- [ ] Rating completion grants +5 exactly once per `adventureId`
+- [ ] Repeated tap, repeated OK, refresh, back navigation, and animation replay do not duplicate XP
+- [ ] Same DateIdea started again gets a new `adventureId` and may earn XP normally
 
-## MD-002 Reward Burst
+## Egg Progression
 
-- [ ] UI state sequence follows `idle → rewardModalOpen → rewardAnimationPlaying → rewardAnimationComplete`
-- [ ] `resolveMemoryPrompt(adventureId, "completed")` is called before presentation is treated as awarded
-- [ ] Animation does not trigger XP settlement
-- [ ] Animation can be interrupted without corrupting persisted state
-- [ ] Animation can complete without writing SaveData
-- [ ] Star particles are small and visually restrained
-- [ ] Star treatment is pale-yellow / champagne-gold
-- [ ] Burst travels toward the Egg mini icon under normal motion settings
-- [ ] Egg mini icon has one soft glow / bump response
-- [ ] Reduced-motion preference receives simpler feedback where supported
-- [ ] Reward feedback does not become a blocking navigation gate
+Canonical V1 hatch threshold is **100 XP**.
+
+- [ ] 0–24 XP renders `dormant`
+- [ ] 25–49 XP renders `warming`
+- [ ] 50–74 XP renders `glowing`
+- [ ] 75–99 XP renders `cracking`
+- [ ] 100+ XP renders `hatched`
+- [ ] Progress is calculated from persisted XP after refresh
+- [ ] No separate persisted Egg XP/progress counter can drift from total XP
+- [ ] Crossing 100 XP deterministically produces hatched state
 
 ## Persistence
 
 - [ ] V1 uses localStorage only
 - [ ] Adventure state survives refresh where required by the flow
-- [ ] Corrupted or invalid V1 save data fails safely without crashing
+- [ ] Corrupted or invalid save data fails safely without crashing
 - [ ] UI does not access localStorage directly
 - [ ] No image data is persisted
-- [ ] No reward modal / animation state is persisted
 
 ## Mobile
 
@@ -86,66 +85,42 @@
 - [ ] 375px usable
 - [ ] 390px usable
 - [ ] No horizontal overflow
-- [ ] Primary CTA has comfortable touch target
-- [ ] Reward modal fits without clipping on supported widths
-- [ ] Reward burst does not create horizontal overflow
+- [ ] Reward modal and animation do not block required navigation
 - [ ] Core flow works with one-hand mobile use
-
-## Data
-
-- [ ] Every `DateIdea` has a unique id
-- [ ] Required localized fields are populated for `zh`, `en`, and `ja`
-- [ ] `categories` values are valid
-- [ ] No duplicated activity records
-- [ ] Memory Prompts are specific and appropriate
 
 ## Regression
 
 - [ ] Home loads
-- [ ] Browse works
-- [ ] Random works
-- [ ] Detail works
-- [ ] Start works
-- [ ] Adventure works
-- [ ] Complete works
+- [ ] Browse / random / detail work
+- [ ] Start / Adventure / Complete work
 - [ ] Memory Prompt works
-- [ ] MD-002 reward modal works
-- [ ] MD-002 reward animation works
+- [ ] Reward modal / burst works
 - [ ] Rating works
 - [ ] XP settlement works
-- [ ] Egg progress works
-- [ ] Refresh/back navigation preserve the correct adventure instance
+- [ ] Egg progress / hatch works
+- [ ] Refresh/back preserve the correct adventure instance
 - [ ] No release-blocking console errors
 
 ## Explicitly Deferred
 
-The following are not required by this V1 contract:
-
 - user accounts
 - cloud sync
-- photo upload
-- photo database
-- cloud photo storage
+- photo upload / photo database / cloud photo storage
 - photo verification
 - interactive category / mood filters
 - complex Egg inventory / economy / collectibles
-- persisted reward animation history
-- sound effects for MD-002
-
-V1 UI must not present non-functional controls that imply these deferred features already work.
 
 ## Release
 
-- [ ] All V1 contract fixes reviewed by Lead Architect
+- [ ] Architect contract approved
 - [ ] Content migrated to required Memory Prompts
-- [ ] UI migrated to the canonical flow
-- [ ] MD-002 implemented within the presentation/business boundaries above
+- [ ] UI implements Rating continuity and shared Egg target
+- [ ] MD-002 presentation is connected to persisted XP without owning settlement
 - [ ] Integration issues resolved
 - [ ] `release/v1` refreshed from approved `develop`
 - [ ] Production build succeeds
 - [ ] Mobile smoke test passes
-- [ ] Deployment succeeds
-- [ ] Production smoke test passes
+- [ ] Deployment and production smoke test pass
 - [ ] QA approval
 - [ ] Lead Architect approval
 
