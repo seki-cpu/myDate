@@ -17,21 +17,18 @@ const ratingCopy = {
     title: "今天的约会怎么样？",
     note: "只给自己看。选一个 1–5 的分数，就结束今天的流程。",
     submit: "完成",
-    skip: "暂时不评分",
   },
   en: {
     eyebrow: "Private rating",
     title: "How was this date?",
     note: "This stays private. Pick a score from 1–5 to finish today’s flow.",
     submit: "Finish",
-    skip: "Not now",
   },
   ja: {
     eyebrow: "自分だけの評価",
     title: "今日のデートはどうだった？",
     note: "自分だけに見える評価。1〜5を選んで、今日の流れを終えよう。",
     submit: "完了",
-    skip: "今は評価しない",
   },
 } as const;
 
@@ -77,9 +74,6 @@ export function RatingContent({ adventureId }: RatingContentProps) {
       <div className="action-stack">
         <button className="primary-button" type="button" onClick={finish} disabled={!rating || submitting}>
           {submitting ? "…" : copy.submit}
-        </button>
-        <button className="secondary-button" type="button" onClick={() => router.push("/")} disabled={submitting}>
-          {copy.skip}
         </button>
       </div>
     </>
