@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { LanguageMenu } from "../ui/LanguageMenu";
+import { EggMiniProgress } from "../egg/EggMiniProgress";
 
 interface MobileShellProps {
   children: ReactNode;
@@ -12,9 +13,11 @@ interface MobileShellProps {
 export function MobileShell({
   children,
   backHref,
-  trailingHref = "/memories",
-  trailingLabel = "Memories",
+  trailingHref,
+  trailingLabel,
 }: MobileShellProps) {
+  const hasTrailingAction = Boolean(trailingHref && trailingLabel);
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -30,10 +33,13 @@ export function MobileShell({
         )}
 
         <div className="topbar-actions">
+          <EggMiniProgress />
           <LanguageMenu />
-          <Link className="section-link" href={trailingHref}>
-            {trailingLabel}
-          </Link>
+          {hasTrailingAction ? (
+            <Link className="section-link" href={trailingHref!}>
+              {trailingLabel}
+            </Link>
+          ) : null}
         </div>
       </header>
       {children}

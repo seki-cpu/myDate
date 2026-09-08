@@ -3,7 +3,7 @@ import { MobileShell } from "../../components/layout/MobileShell";
 import { AdventureContent } from "../../components/activity/AdventureContent";
 
 interface AdventurePageProps {
-  searchParams?: Promise<{ id?: string }>;
+  searchParams?: Promise<{ id?: string; adventureId?: string }>;
 }
 
 export default async function AdventurePage({ searchParams }: AdventurePageProps) {
@@ -11,8 +11,8 @@ export default async function AdventurePage({ searchParams }: AdventurePageProps
   const idea = dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
-    <MobileShell backHref="/result" trailingHref="/memories" trailingLabel="Memories">
-      <AdventureContent idea={idea} />
+    <MobileShell backHref={idea ? `/result?id=${idea.id}` : "/result"}>
+      <AdventureContent idea={idea} adventureId={params?.adventureId} />
     </MobileShell>
   );
 }

@@ -6,12 +6,6 @@ import { HomeIdeaBrowser } from "../components/activity/HomeIdeaBrowser";
 import { MobileShell } from "../components/layout/MobileShell";
 import { uiCopy, useLocale } from "../components/ui/locale";
 
-const categoryLabels = {
-  zh: ["美食", "户外", "室内", "创意", "放松"],
-  en: ["Food", "Outdoor", "Indoor", "Creative", "Relaxing"],
-  ja: ["食べる", "屋外", "屋内", "クリエイティブ", "リラックス"],
-} as const;
-
 export default function HomePage() {
   const locale = useLocale();
   const copy = uiCopy[locale];
@@ -34,19 +28,6 @@ export default function HomePage() {
       </section>
 
       <section className="section" id="browse">
-        <div className="section-heading">
-          <h2 className="section-title">{copy.mood}</h2>
-        </div>
-        <div className="chip-row" aria-label="Date idea categories">
-          {categoryLabels[locale].map((category) => (
-            <span className="chip" key={category}>
-              {category}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      <section className="section">
         <div className="section-heading">
           <h2 className="section-title">{copy.ideas}</h2>
           <Link className="section-link" href="/result?mode=random">

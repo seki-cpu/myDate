@@ -1,0 +1,28 @@
+.shell { position: relative; }
+.eggTarget { position:absolute; top:-4px; right:0; display:grid; width:42px; height:42px; place-items:center; border:1px solid rgba(184,148,82,.22); border-radius:999px; background:rgba(255,255,255,.86); box-shadow:0 8px 20px rgba(56,43,22,.06); }
+.eggShape { width:19px; height:24px; border:1px solid rgba(184,148,82,.36); border-radius:52% 48% 46% 54% / 62% 62% 38% 38%; background:linear-gradient(145deg,#fff9e9,#ead5a9); }
+.eggReceiving { animation:egg-receive 420ms ease-out 620ms both; }
+.reducedEgg { animation:egg-glow 300ms ease-out 80ms both; }
+.promptFocus { position:relative; overflow:hidden; padding:26px 22px 24px; border:1px solid rgba(236,230,221,.92); border-radius:28px; background:#fff; box-shadow:0 12px 30px rgba(56,43,22,.07); }
+.promptFocus::after { content:""; position:absolute; right:-40px; bottom:-54px; width:140px; height:140px; border-radius:999px; background:#fbf6e9; }
+.promptIcon { position:relative; z-index:1; display:grid; width:42px; height:42px; margin-bottom:18px; place-items:center; border-radius:14px; background:#fbf6e9; color:#b89452; font-size:21px; }
+.promptText,.promptNote { position:relative; z-index:1; overflow-wrap:anywhere; }
+.promptText { margin:14px 0 0; color:#1f1d1a; font-size:17px; line-height:1.55; font-weight:650; }
+.promptNote { margin:12px 0 0; color:#777067; font-size:13px; line-height:1.55; }
+.actions button { width:100%; }
+.actions button:disabled { cursor:default; opacity:.58; }
+.modalBackdrop { position:fixed; inset:0; z-index:40; display:grid; place-items:end center; padding:20px 18px calc(20px + env(safe-area-inset-bottom)); background:rgba(31,29,26,.18); backdrop-filter:blur(4px); }
+.modal { width:min(100%,444px); padding:24px; border:1px solid rgba(236,230,221,.95); border-radius:26px; background:#fffdf9; box-shadow:0 22px 60px rgba(56,43,22,.18); animation:modal-in 220ms ease-out both; }
+.modalSparkle { display:grid; width:42px; height:42px; margin-bottom:16px; place-items:center; border-radius:999px; background:#fbf6e9; color:#b89452; font-size:20px; }
+.modal h2 { margin:0; color:#1f1d1a; font-size:24px; letter-spacing:-.035em; }
+.modal p { margin:9px 0 22px; color:#777067; font-size:15px; line-height:1.55; }
+.modal button { width:100%; }
+.burst { position:fixed; inset:0; z-index:55; pointer-events:none; }
+.star { --reward-x:0px; --reward-y:0px; --reward-delay:0ms; position:fixed; color:#d9bd73; font-size:15px; line-height:1; opacity:0; filter:drop-shadow(0 2px 4px rgba(184,148,82,.16)); animation:star-travel 780ms cubic-bezier(.22,.7,.24,1) var(--reward-delay) forwards; }
+.reduced .star { animation:star-fade 260ms ease-out var(--reward-delay) forwards; }
+@keyframes star-travel { 0%{opacity:0;transform:translate3d(0,0,0) scale(.7) rotate(0deg)} 18%{opacity:.95} 100%{opacity:0;transform:translate3d(var(--reward-x),var(--reward-y),0) scale(.5) rotate(120deg)} }
+@keyframes star-fade { 0%{opacity:0;transform:scale(.8)} 45%{opacity:.85;transform:scale(1)} 100%{opacity:0;transform:scale(.9)} }
+@keyframes egg-receive { 0%{transform:scale(1);box-shadow:0 8px 20px rgba(56,43,22,.06)} 45%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(217,189,115,.16),0 10px 26px rgba(184,148,82,.16)} 100%{transform:scale(1);box-shadow:0 8px 20px rgba(56,43,22,.06)} }
+@keyframes egg-glow { 0%{box-shadow:0 8px 20px rgba(56,43,22,.06)} 50%{box-shadow:0 0 0 7px rgba(217,189,115,.14)} 100%{box-shadow:0 8px 20px rgba(56,43,22,.06)} }
+@keyframes modal-in { from{opacity:0;transform:translateY(10px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
+@media (prefers-reduced-motion: reduce) { .modal { animation:none; } }

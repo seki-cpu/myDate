@@ -1,0 +1,41 @@
+.panel {
+  margin-top: 28px;
+  padding: 28px 22px;
+  border: 1px solid rgba(236, 230, 221, 0.86);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.eggWrap {
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+}
+
+.egg {
+  width: 136px;
+  height: 174px;
+  border: 1px solid rgba(184, 148, 82, 0.28);
+  border-radius: 52% 48% 46% 54% / 62% 62% 38% 38%;
+  background: linear-gradient(145deg, #fff9e9, #ead5a9);
+  box-shadow:
+    inset -16px -14px 32px rgba(115, 85, 28, 0.08),
+    0 18px 34px rgba(56, 43, 22, 0.08);
+}
+
+.title {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 760;
+}
+
+.copy {
+  margin: 10px auto 0;
+  max-width: 28rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}

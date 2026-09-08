@@ -1,18 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { DateIdea } from "../../types/domain";
-import { flowCopy, useLocale } from "../ui/locale";
-import { localizeExpandedIdea } from "../ui/expandedLocale";
+import { startAdventure } from "../../lib/storage";
+import { getCategoryLabel } from "../ui/categoryLabel";
+import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface ResultContentProps {
   idea?: DateIdea;
 }
 
 export function ResultContent({ idea }: ResultContentProps) {
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
   const locale = useLocale();
   const copy = flowCopy[locale];
-  const localizedIdea = idea ? localizeExpandedIdea(idea, locale) : undefined;
+  const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
+  const primaryCategory = localizedIdea?.categories[0];
 
   if (!localizedIdea) {
     return (
@@ -29,11 +35,20 @@ export function ResultContent({ idea }: ResultContentProps) {
     );
   }
 
+  const ideaId = localizedIdea.id;
+
+  function beginAdventure() {
+    if (starting) return;
+    setStarting(true);
+    const adventure = startAdventure(ideaId);
+    router.push(`/adventure?id=${ideaId}&adventureId=${adventure.id}`);
+  }
+
   return (
     <>
       <section className="result-hero">
         <div className="result-number">{copy.resultPick}</div>
-        <p className="eyebrow">{localizedIdea.category}</p>
+        <p className="eyebrow">{primaryCategory ? getCategoryLabel(primaryCategory, locale) : ""}</p>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
         <div className="detail-grid">
@@ -60,9 +75,9 @@ export function ResultContent({ idea }: ResultContentProps) {
 
       <div className="bottom-action">
         <div className="bottom-action-inner">
-          <Link className="primary-button" href={`/adventure?id=${localizedIdea.id}`}>
-            {copy.start}
-          </Link>
+          <button className="primary-button" type="button" disabled={starting} onClick={beginAdventure}>
+            {starting ? "…" : copy.start}
+          </button>
         </div>
       </div>
     </>

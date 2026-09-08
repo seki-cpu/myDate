@@ -47,52 +47,32 @@ export function useLocale() {
   return locale;
 }
 
-const cardCopy: Record<string, Record<Locale, Pick<DateIdea, "title" | "description">>> = {
-  "sunset-walk": {
-    zh: { title: "沿着夕阳散步", description: "找一条风景舒服的路线，不设终点，只一起走到想停下来的时候。" },
-    en: { title: "Sunset Walk", description: "Pick a scenic route and walk without a destination. Stop whenever the moment feels right." },
-    ja: { title: "夕暮れ散歩", description: "景色のいい道を、目的地を決めずに歩く。止まりたくなった場所が今日のゴール。" },
-  },
-  "one-canvas": {
-    zh: { title: "一起画一幅画", description: "不要各画各的。共享一张画布，轮流加入颜色、形状和只有你们懂的东西。" },
-    en: { title: "One Canvas", description: "Share one canvas and take turns adding colors, shapes, and little things only the two of you understand." },
-    ja: { title: "二人で一枚の絵", description: "別々ではなく、一枚のキャンバスを共有。色や形、二人にしかわからないものを自由に足していく。" },
-  },
-  "dance-night": {
-    zh: { title: "一起去跳舞", description: "找一家音乐合口味的地方。不玩游戏，不完成挑战，只跟着音乐一起跳。" },
-    en: { title: "Dance Night", description: "Find a place playing music you both like. No games, no challenges—just dance and enjoy the night." },
-    ja: { title: "一緒に踊る夜", description: "二人とも好きな音楽が流れる場所へ。ゲームも課題もなし。ただ音楽に任せて踊る。" },
-  },
-  "convenience-store-picnic": {
-    zh: { title: "便利店野餐", description: "各自挑一点零食和饮料，再找一个舒服的公园、河边或长椅坐下来。" },
-    en: { title: "Convenience Store Picnic", description: "Pick a few snacks and drinks, then find a park, riverside spot, or quiet bench to share them." },
-    ja: { title: "コンビニピクニック", description: "お菓子と飲み物を少し買って、公園や川辺、気持ちのいいベンチへ。" },
-  },
-  "five-beautiful-things": {
-    zh: { title: "寻找五件漂亮的东西", description: "没有目的地地逛一会儿，一起找到五样值得停下来看的东西。" },
-    en: { title: "Find Five Beautiful Things", description: "Wander without a destination and find five things worth stopping to notice." },
-    ja: { title: "きれいなものを5つ探す", description: "目的地を決めずに歩きながら、思わず立ち止まりたくなるものを5つ探す。" },
-  },
-  "arcade-date": {
-    zh: { title: "电玩城乱玩一晚", description: "赛车、音游、抓娃娃，看到什么好玩就玩什么。输赢都不用太认真。" },
-    en: { title: "Arcade Date", description: "Race, play rhythm games, try a claw machine—just follow whatever looks fun." },
-    ja: { title: "ゲームセンターデート", description: "レース、音ゲー、クレーンゲーム。気になったものを自由に遊んでみる。" },
-  },
-  "cook-something-new": {
-    zh: { title: "一起做一道没做过的菜", description: "选一道你们都不会的菜，一边查步骤一边合作。做成功不是重点。" },
-    en: { title: "Cook Something New", description: "Choose a recipe neither of you has made before and figure it out together. Success is optional." },
-    ja: { title: "初めての料理を一緒に作る", description: "二人とも作ったことのない料理を選んで、一緒に試してみる。成功しなくても大丈夫。" },
-  },
-  "quiet-reading-date": {
-    zh: { title: "安静地一起看书", description: "找一家舒服的咖啡馆，各自看自己的书。不需要一直聊天，也是在约会。" },
-    en: { title: "Quiet Reading Date", description: "Find a cozy café and read your own books side by side. You do not have to keep talking to be together." },
-    ja: { title: "静かな読書デート", description: "落ち着くカフェで、それぞれ好きな本を読む。ずっと話さなくても、一緒にいる時間になる。" },
-  },
+export type LocalizedDateIdea = Omit<
+  DateIdea,
+  "title" | "description" | "littleMission" | "photoPrompt"
+> & {
+  title: string;
+  description: string;
+  littleMission?: string;
+  photoPrompt?: string;
 };
 
-export function localizeIdea(idea: DateIdea, locale: Locale): DateIdea {
-  const localized = cardCopy[idea.id]?.[locale];
-  return localized ? { ...idea, ...localized } : idea;
+function pickLocalizedText(text: DateIdea["title"], locale: Locale): string {
+  return text[locale] ?? text.en;
+}
+
+export function localizeIdea(idea: DateIdea, locale: Locale): LocalizedDateIdea {
+  return {
+    ...idea,
+    title: pickLocalizedText(idea.title, locale),
+    description: pickLocalizedText(idea.description, locale),
+    littleMission: idea.littleMission ? pickLocalizedText(idea.littleMission, locale) : undefined,
+    photoPrompt: idea.photoPrompt ? pickLocalizedText(idea.photoPrompt, locale) : undefined,
+  };
+}
+
+export function localizePhotoPrompt(idea: DateIdea, locale: Locale): string | undefined {
+  return idea.photoPrompt ? pickLocalizedText(idea.photoPrompt, locale) : undefined;
 }
 
 export const uiCopy = {
@@ -250,22 +230,3 @@ export const flowCopy = {
     budget: { free: "無料", low: "低め", medium: "普通", high: "高め" },
   },
 } as const;
-
-export function localizePhotoPrompt(idea: DateIdea, locale: Locale): string | undefined {
-  if (!idea.photoPrompt) return undefined;
-  if (idea.id === "sunset-walk") {
-    return {
-      zh: "拍一张两个人的鞋或影子同时入镜的照片。",
-      en: "Take one photo with both of your shoes or shadows in the frame.",
-      ja: "二人の靴か影が一緒に写る写真を一枚撮る。",
-    }[locale];
-  }
-  if (idea.id === "five-beautiful-things") {
-    return {
-      zh: "最后一张照片里，让你们两个人的一小部分同时入镜。",
-      en: "Make the final photo include a small part of both of you.",
-      ja: "最後の写真には、二人の一部分を一緒に入れる。",
-    }[locale];
-  }
-  return idea.photoPrompt;
-}

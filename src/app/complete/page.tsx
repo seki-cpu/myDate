@@ -3,7 +3,7 @@ import { MobileShell } from "../../components/layout/MobileShell";
 import { CompleteContent } from "../../components/activity/CompleteContent";
 
 interface CompletePageProps {
-  searchParams?: Promise<{ id?: string }>;
+  searchParams?: Promise<{ id?: string; adventureId?: string }>;
 }
 
 export default async function CompletePage({ searchParams }: CompletePageProps) {
@@ -11,8 +11,8 @@ export default async function CompletePage({ searchParams }: CompletePageProps) 
   const idea = dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
-    <MobileShell backHref="/" trailingHref="/memories" trailingLabel="Memories">
-      <CompleteContent idea={idea} />
+    <MobileShell backHref="/">
+      <CompleteContent idea={idea} adventureId={params?.adventureId} />
     </MobileShell>
   );
 }
