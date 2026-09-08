@@ -8,9 +8,10 @@ The UI must preserve this order:
 2. Random / quick choice
 3. Adventure flow
 4. Memory Prompt
-5. Rating
-6. XP settlement
-7. Egg progress
+5. Reward feedback
+6. Rating
+7. XP settlement
+8. Egg progress
 
 The Egg must not become the primary CTA or navigation gate.
 
@@ -30,10 +31,19 @@ UI responsibilities for the V1 flow:
 - consume the canonical DateIdea contract
 - render localized `photoPrompt` after completion
 - provide `I got it` and `Skip`
-- provide the rating step
 - call shared persistence helpers for adventure / Memory Prompt / rating completion
-- display XP settlement and Egg progress feedback
 - preserve `adventureId` through refresh/back navigation
+- implement MD-002 reward feedback after successful `I got it`
+- implement the local presentation state sequence:
+  - `idle`
+  - `rewardModalOpen`
+  - `rewardAnimationPlaying`
+  - `rewardAnimationComplete`
+- show a lightweight reward modal before the animation
+- animate a small pale-yellow / champagne-gold star burst toward the Egg mini icon
+- make the Egg mini icon glow / bump once
+- respect reduced-motion preferences with a simpler fallback where feasible
+- continue to Rating even if the animation is skipped or interrupted
 
 UI must not:
 
@@ -43,6 +53,31 @@ UI must not:
 - store photo URLs
 - access localStorage directly
 - grant XP by unguarded local component increments
+- make XP settlement depend on animation completion
+- persist reward modal or animation state
+- let animation components call persistence helpers directly
+
+### MD-002 Component Boundary
+
+The flow/container component owns orchestration:
+
+```text
+user action
+→ persistence adapter call
+→ local reward UI state
+→ presentation animation
+→ next step
+```
+
+View-only animation components may receive props such as:
+
+- whether they are active
+- source position
+- Egg target position
+- reduced-motion flag
+- completion callback for UI sequencing only
+
+They must not receive SaveData mutation responsibilities.
 
 ## Date Content Developer Ownership
 
@@ -79,6 +114,8 @@ Primary ownership:
 
 Architect owns the rule that each started activity gets a unique `adventureId` and each XP source can be awarded at most once for that id.
 
+For MD-002, Architect also owns the rule that reward animation is presentation-only and requires no new SaveData field.
+
 ## Troubleshooting Ownership
 
 Troubleshooting has exception-based access across files only for confirmed integration bugs.
@@ -87,7 +124,23 @@ Rule:
 
 > Fix the bug, not the architecture.
 
-Troubleshooting may fix broken `adventureId` propagation, stale flow state, or integration failures, but must not invent a second XP system, DateIdea contract, or persistence path.
+Troubleshooting may fix:
+
+- broken `adventureId` propagation
+- stale flow state
+- modal that cannot dismiss
+- animation that never completes its UI callback
+- star burst targeting the wrong Egg icon
+- reduced-motion fallback failures
+- visual replay bugs
+- integration failures between the flow container and Egg mini icon
+
+Troubleshooting must not:
+
+- invent a second XP system
+- add persisted animation flags
+- move XP settlement into animation callbacks
+- create a second DateIdea contract or persistence path
 
 Any non-trivial change to XP settlement, storage schema, or domain types requires Architect review.
 
@@ -111,6 +164,20 @@ QA must verify:
 - refresh/back/repeated actions do not duplicate any XP source
 - the same DateIdea can be started again as a new adventure and earn XP normally
 - Egg progress reads the correct derived XP
+
+MD-002 QA must additionally verify:
+
+- tapping `I got it` attempts business settlement before reward presentation
+- reward modal opens after the action
+- tapping `OK` starts the presentation-only reward animation
+- star burst travels toward the Egg mini icon under normal motion settings
+- Egg mini icon glows / bumps once
+- interrupting or skipping the animation does not lose or duplicate XP
+- refreshing after `I got it` does not grant another +5 XP
+- going back and tapping `I got it` again does not grant another +5 XP
+- replaying a visual effect does not change persisted XP
+- reduced-motion users receive a simpler non-traveling feedback where supported
+- Rating remains reachable even if the animation is interrupted
 
 QA should report product bugs instead of silently changing architecture on `release/v1`.
 
@@ -137,5 +204,14 @@ V1 visual language:
 - quick scanning
 - limited decoration
 - generous but not wasteful spacing
+
+MD-002 reward feedback should use:
+
+- small pale-yellow / champagne-gold stars
+- restrained particle count
+- short duration
+- one directional motion toward Egg
+- one soft Egg glow / bump
+- no loud arcade-heavy presentation
 
 XP and Egg feedback should feel like a lightweight reward after the activity, not the reason to use the product.
