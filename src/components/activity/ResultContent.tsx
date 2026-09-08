@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { DateIdea } from "../../types/domain";
+import { startAdventure } from "../../lib/storage";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface ResultContentProps {
@@ -9,6 +12,8 @@ interface ResultContentProps {
 }
 
 export function ResultContent({ idea }: ResultContentProps) {
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
   const locale = useLocale();
   const copy = flowCopy[locale];
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
@@ -26,6 +31,13 @@ export function ResultContent({ idea }: ResultContentProps) {
         </div>
       </section>
     );
+  }
+
+  function beginAdventure() {
+    if (starting) return;
+    setStarting(true);
+    const adventure = startAdventure(localizedIdea.id);
+    router.push(`/adventure?id=${localizedIdea.id}&adventureId=${adventure.id}`);
   }
 
   return (
@@ -59,9 +71,9 @@ export function ResultContent({ idea }: ResultContentProps) {
 
       <div className="bottom-action">
         <div className="bottom-action-inner">
-          <Link className="primary-button" href={`/adventure?id=${localizedIdea.id}`}>
-            {copy.start}
-          </Link>
+          <button className="primary-button" type="button" disabled={starting} onClick={beginAdventure}>
+            {starting ? "…" : copy.start}
+          </button>
         </div>
       </div>
     </>

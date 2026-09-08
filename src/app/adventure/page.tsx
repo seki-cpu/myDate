@@ -3,7 +3,7 @@ import { MobileShell } from "../../components/layout/MobileShell";
 import { AdventureContent } from "../../components/activity/AdventureContent";
 
 interface AdventurePageProps {
-  searchParams?: Promise<{ id?: string }>;
+  searchParams?: Promise<{ id?: string; adventureId?: string }>;
 }
 
 export default async function AdventurePage({ searchParams }: AdventurePageProps) {
@@ -12,7 +12,7 @@ export default async function AdventurePage({ searchParams }: AdventurePageProps
 
   return (
     <MobileShell backHref="/result">
-      <AdventureContent idea={idea} />
+      <AdventureContent idea={idea} adventureId={params?.adventureId} />
     </MobileShell>
   );
 }
