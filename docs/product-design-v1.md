@@ -26,7 +26,8 @@ The primary experience is date discovery and doing the activity. Egg progress is
 - Complete an adventure
 - Required localized Memory Prompt for every DateIdea
 - Memory Prompt actions: `I got it` or `Skip`
-- Rating step after Memory Prompt
+- MD-002 lightweight reward feedback after `I got it`
+- Rating step after Memory Prompt reward feedback
 - XP settlement
 - Egg progress driven by XP
 - Chinese / English / Japanese across the primary flow
@@ -82,6 +83,44 @@ Each XP source is idempotent per started adventure. Refreshing, navigating back,
 
 Skipping the Memory Prompt grants 0 XP for that source.
 
+### MD-002 Reward Burst to Egg
+
+After the user completes the Memory Prompt by tapping `I got it`, V1 gives a short, soft reward moment before continuing.
+
+Product sequence:
+
+```text
+Memory Prompt
+→ I got it
+→ lightweight reward modal
+→ OK
+→ pale-yellow / champagne-gold star burst toward Egg mini icon
+→ Egg mini icon glows / bumps once
+→ continue to Rating
+```
+
+The visual effect represents the existing +5 XP Memory Prompt reward. It does not create additional XP.
+
+Design intent:
+
+- warm
+- soft
+- minimal
+- short
+- satisfying without feeling arcade-heavy
+- mobile-friendly
+- secondary to the activity itself
+
+The effect should use a restrained number of small pale-yellow / champagne-gold stars.
+
+The reward modal should be lightweight and quick to dismiss.
+
+The animation is presentation-only. The experience must remain correct if the user skips, interrupts, or does not see the animation.
+
+Reduced-motion users should receive a simpler feedback treatment where feasible, such as a brief +5 XP fade and subtle Egg glow without traveling particles.
+
+V1 does not require sound effects for MD-002.
+
 ### Not V1
 
 - User accounts
@@ -96,6 +135,8 @@ Skipping the Memory Prompt grants 0 XP for that source.
 - Photo verification
 - Complex Egg economy / inventory / collectibles
 - Interactive category / mood filters
+- Persisted animation history
+- MD-002 sound effects
 
 ## 4. Core User Flow
 
@@ -106,6 +147,7 @@ Date discovery
 → Complete
 → Memory Prompt
 → I got it / Skip
+→ Reward feedback when completed
 → Rating
 → XP settlement
 → Egg progress
@@ -137,11 +179,21 @@ Priority order:
 - Large tap targets
 - Fast scanning over dense information
 
+For MD-002 specifically:
+
+- use small pale-yellow / champagne-gold stars
+- use one short directional burst
+- use one soft Egg glow / bump
+- avoid excessive particles
+- avoid arcade-heavy visual language
+
 ## 7. Egg Direction
 
 Egg progress is included as the final reward feedback in the V1 activity flow.
 
 The Egg remains architecturally separate from DateIdea.
+
+MD-002 may use the Egg mini icon as a visual absorption target, but Egg still does not become the primary navigation or discovery surface.
 
 V1 does not introduce inventory, economy, collectibles, or other game systems beyond XP-driven progress.
 
@@ -169,6 +221,7 @@ During friend testing, we want to learn:
 - Do users actually complete ideas?
 - Do Memory Prompts feel meaningful rather than intrusive?
 - Does `I got it` / `Skip` feel frictionless?
+- Does MD-002 feel rewarding without slowing the flow?
 - Does the XP and Egg feedback feel rewarding without distracting from the date?
 
 ## 10. V1 Development Rule
