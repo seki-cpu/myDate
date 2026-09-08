@@ -174,11 +174,16 @@ The following are not V1 release gates unless separately promoted into V1 scope:
 - [x] PR #10 integration review passed and merged to `develop`
 - [x] `release/v1` refreshed from approved `develop`
 - [x] Lightweight Egg presentation applied directly to `release/v1` without changing shared XP/storage contract
-- [ ] Production build succeeds
+- [x] Production typecheck succeeds
+- [x] Production build succeeds
 - [ ] Mobile smoke test passes
 - [ ] Deployment succeeds
 - [ ] Production smoke test passes
-- [ ] QA approval
-- [ ] Lead Architect final release approval
+- [ ] Final GA QA approval
+- [ ] Lead Architect final GA approval
 
-Only after all V1 release gates pass may `release/v1` be merged into `master`.
+## Lightweight Beta Exception
+
+For the 2026-09-08 lightweight beta, the product owner explicitly approved shipping before the remaining mobile/runtime/deployment smoke gates are complete.
+
+This exception permits `release/v1` to merge into `master` as an early beta only. It does **not** convert the unchecked final-GA gates above into PASS.
