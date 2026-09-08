@@ -153,6 +153,9 @@ export function resolveMemoryPrompt(
   status: Exclude<MemoryPromptStatus, "pending">,
 ): AdventureRecord | undefined {
   return updateAdventure(adventureId, (adventure) => {
+    if (!adventure.completedAt) return adventure;
+    if (adventure.memoryPromptStatus === "completed") return adventure;
+
     const completed = status === "completed";
 
     return {
@@ -169,6 +172,7 @@ export function resolveMemoryPrompt(
 
 export function completeRating(adventureId: string): AdventureRecord | undefined {
   return updateAdventure(adventureId, (adventure) => {
+    if (adventure.memoryPromptStatus === "pending") return adventure;
     if (adventure.xpAwarded.rating) return adventure;
 
     return {
