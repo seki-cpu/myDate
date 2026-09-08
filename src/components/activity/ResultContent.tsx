@@ -35,11 +35,13 @@ export function ResultContent({ idea }: ResultContentProps) {
     );
   }
 
+  const ideaId = localizedIdea.id;
+
   function beginAdventure() {
     if (starting) return;
     setStarting(true);
-    const adventure = startAdventure(localizedIdea.id);
-    router.push(`/adventure?id=${localizedIdea.id}&adventureId=${adventure.id}`);
+    const adventure = startAdventure(ideaId);
+    router.push(`/adventure?id=${ideaId}&adventureId=${adventure.id}`);
   }
 
   return (
