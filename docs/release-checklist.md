@@ -11,6 +11,8 @@
 - [ ] No backend or cloud image storage is introduced
 - [ ] XP settlement is tied to a unique `adventureId`
 - [ ] Egg state remains separated from DateIdea
+- [ ] MD-002 adds no SaveData fields for animation/modal state
+- [ ] Reward animation components do not own XP or persistence logic
 
 ## Product
 
@@ -22,7 +24,10 @@
 - [ ] Complete activity flow works
 - [ ] Memory Prompt appears after completion
 - [ ] `I got it` and `Skip` both continue the flow
-- [ ] Rating appears after Memory Prompt
+- [ ] `I got it` opens the MD-002 reward modal after settlement is attempted
+- [ ] Reward modal `OK` triggers the star burst toward Egg
+- [ ] Egg mini icon glows / bumps once
+- [ ] Rating remains reachable after reward feedback
 - [ ] XP settlement appears after rating
 - [ ] Egg progress appears after XP settlement
 - [ ] Chinese / English / Japanese work across the primary flow
@@ -47,8 +52,24 @@
 - [ ] Refresh does not duplicate XP
 - [ ] Back navigation does not duplicate XP
 - [ ] Repeating the same action does not duplicate XP
+- [ ] Replaying MD-002 reward presentation does not duplicate XP
+- [ ] Interrupting MD-002 reward animation does not lose XP
 - [ ] Starting the same DateIdea again creates a new `adventureId` and can earn XP normally
 - [ ] Total XP is derived consistently from persisted award state
+
+## MD-002 Reward Burst
+
+- [ ] UI state sequence follows `idle → rewardModalOpen → rewardAnimationPlaying → rewardAnimationComplete`
+- [ ] `resolveMemoryPrompt(adventureId, "completed")` is called before presentation is treated as awarded
+- [ ] Animation does not trigger XP settlement
+- [ ] Animation can be interrupted without corrupting persisted state
+- [ ] Animation can complete without writing SaveData
+- [ ] Star particles are small and visually restrained
+- [ ] Star treatment is pale-yellow / champagne-gold
+- [ ] Burst travels toward the Egg mini icon under normal motion settings
+- [ ] Egg mini icon has one soft glow / bump response
+- [ ] Reduced-motion preference receives simpler feedback where supported
+- [ ] Reward feedback does not become a blocking navigation gate
 
 ## Persistence
 
@@ -57,6 +78,7 @@
 - [ ] Corrupted or invalid V1 save data fails safely without crashing
 - [ ] UI does not access localStorage directly
 - [ ] No image data is persisted
+- [ ] No reward modal / animation state is persisted
 
 ## Mobile
 
@@ -65,6 +87,8 @@
 - [ ] 390px usable
 - [ ] No horizontal overflow
 - [ ] Primary CTA has comfortable touch target
+- [ ] Reward modal fits without clipping on supported widths
+- [ ] Reward burst does not create horizontal overflow
 - [ ] Core flow works with one-hand mobile use
 
 ## Data
@@ -85,6 +109,8 @@
 - [ ] Adventure works
 - [ ] Complete works
 - [ ] Memory Prompt works
+- [ ] MD-002 reward modal works
+- [ ] MD-002 reward animation works
 - [ ] Rating works
 - [ ] XP settlement works
 - [ ] Egg progress works
@@ -103,6 +129,8 @@ The following are not required by this V1 contract:
 - photo verification
 - interactive category / mood filters
 - complex Egg inventory / economy / collectibles
+- persisted reward animation history
+- sound effects for MD-002
 
 V1 UI must not present non-functional controls that imply these deferred features already work.
 
@@ -111,6 +139,7 @@ V1 UI must not present non-functional controls that imply these deferred feature
 - [ ] All V1 contract fixes reviewed by Lead Architect
 - [ ] Content migrated to required Memory Prompts
 - [ ] UI migrated to the canonical flow
+- [ ] MD-002 implemented within the presentation/business boundaries above
 - [ ] Integration issues resolved
 - [ ] `release/v1` refreshed from approved `develop`
 - [ ] Production build succeeds
