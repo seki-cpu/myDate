@@ -36,13 +36,7 @@ UI components must not redefine domain models or access localStorage directly.
 
 ## Canonical DateIdea Contract
 
-Canonical shared interfaces live in:
-
-`src/types/domain.ts`
-
-There must be one DateIdea contract across types, content, and UI.
-
-The V1 contract is:
+Canonical shared interfaces live in `src/types/domain.ts`.
 
 ```ts
 interface DateIdea {
@@ -59,45 +53,7 @@ interface DateIdea {
 }
 ```
 
-`LocalizedText` requires `zh`, `en`, and `ja` in V1 and may later add more locale keys without changing DateIdea.
-
-## Memory Prompt
-
-`photoPrompt` is the canonical field name for the V1 **Memory Prompt**.
-
-It is required for every DateIdea and follows the same `LocalizedText` contract as title and description.
-
-The Memory Prompt suggests one meaningful photo the user may take with their own phone camera and keep in their normal phone gallery.
-
-The prompt may focus on:
-
-- environment
-- objects
-- body details
-- shadows
-- food
-- souvenirs
-- shared creations
-- small visual details
-
-The prompt does not need to include both people.
-
-V1 must not:
-
-- upload photos
-- store photos
-- request image URLs
-- verify whether a photo was taken
-- add a photo database
-- add cloud image storage
-- add a backend for images
-
-The UI offers only two outcomes after showing the prompt:
-
-- `I got it`
-- `Skip`
-
-`I got it` means the user says they completed the prompt. The app does not verify this claim.
+`photoPrompt` is the required localized Memory Prompt. It never represents an uploaded or stored image.
 
 ## Canonical V1 Flow
 
@@ -113,27 +69,17 @@ Date discovery
 → Egg progress
 ```
 
-The Egg is downstream from the activity flow. No DateIdea contains XP or Egg-specific fields.
+## Adventure Identity and XP Idempotency
 
-## Adventure Instance Identity
+Every started activity gets a unique `adventureId`.
 
-XP idempotency requires each started activity to have a unique `adventureId`.
+XP values are fixed:
 
-The same DateIdea can be completed again later. Each new start creates a new AdventureRecord with a new id.
+- adventure complete: +20 XP
+- Memory Prompt completed with `I got it`: +5 XP
+- rating completed: +5 XP
 
-Do not use `dateId` alone as an XP idempotency key.
-
-## XP Contract
-
-V1 XP values are fixed:
-
-- complete adventure: +20 XP
-- complete Memory Prompt (`I got it`): +5 XP
-- complete rating: +5 XP
-
-Skipping the Memory Prompt grants 0 XP for that source.
-
-Each AdventureRecord stores three award flags:
+Each AdventureRecord persists three award flags:
 
 ```ts
 xpAwarded: {
@@ -143,57 +89,79 @@ xpAwarded: {
 }
 ```
 
-These flags are the idempotency boundary.
+These flags are the source of truth for exactly-once settlement. Total XP is derived from them and must never be maintained as an unguarded incrementing counter.
 
-Repeated clicks, refreshes, browser back navigation, or returning to a completed step must never grant the same source twice for the same `adventureId`.
+The Memory Prompt +5 XP is committed when `I got it` resolves the Memory Prompt through the shared persistence adapter. Modal confirmation and reward animation are presentation-only and cannot grant XP.
 
-Total XP is derived from persisted award flags rather than incrementing an unguarded counter.
+`Skip` resolves the Memory Prompt with 0 XP and still continues to Rating.
 
-## MD-002 Reward Burst to Egg
+## Rating Contract
 
-MD-002 adds presentation feedback after a successful Memory Prompt completion.
-
-The product sequence is:
-
-```text
-Memory Prompt
-→ user taps I got it
-→ resolveMemoryPrompt(adventureId, "completed")
-→ reward modal opens
-→ user taps OK
-→ star burst travels toward Egg mini icon
-→ Egg mini icon glows / bumps once
-→ continue to Rating
-```
-
-The reward uses the existing +5 Memory Prompt XP source. MD-002 does **not** create a new XP source.
-
-### SaveData Decision
-
-MD-002 requires **no new SaveData fields**.
-
-Persisted business truth already exists in:
+V1 Rating is a private per-adventure score:
 
 ```ts
-memoryPromptStatus
-xpAwarded.memoryPrompt
+type DateRating = 1 | 2 | 3 | 4 | 5;
 ```
 
-Reward modal visibility, animation progress, star particle positions, and Egg bump state are transient presentation state and must not be persisted.
+The value is stored on the AdventureRecord:
 
-Do not add fields such as:
+```ts
+rating?: DateRating;
+ratingCompletedAt?: string;
+```
 
-- rewardModalSeen
-- rewardAnimationPlayed
-- rewardAnimationComplete
-- starBurstComplete
-- eggBumpPlayed
+Submitting a valid rating grants +5 XP exactly once for that `adventureId`.
 
-Replaying or skipping presentation must never affect XP truth.
+The rating value may later be changed without granting additional XP. Rating must not be available while Memory Prompt status is still `pending`.
 
-### UI State Sequence
+The canonical UI continuation is:
 
-The UI-owned state machine is:
+```text
+Memory Prompt resolved
+→ /rating?adventureId=<id>
+→ submit 1–5 rating
+→ XP settlement / Egg progress
+```
+
+The exact route path may be implemented by UI, but Rating must remain a distinct step tied to the same `adventureId`.
+
+## Egg Progression Contract
+
+Egg progression is **derived from persisted XP**, not stored as a second progress counter.
+
+Canonical V1 hatch threshold:
+
+```text
+100 XP
+```
+
+Derived stages:
+
+```text
+0–24 XP   dormant
+25–49 XP  warming
+50–74 XP  glowing
+75–99 XP  cracking
+100+ XP   hatched
+```
+
+`getEggProgress(saveData)` is the canonical derivation boundary.
+
+The result exposes:
+
+- total XP
+- hatch threshold
+- normalized progress from 0 to 1
+- stage
+- hatched boolean
+
+Hatching is deterministic: if persisted XP is at least 100, the Egg is hatched. No separate `eggProgress`, `eggXp`, or `hatched` field is persisted.
+
+This avoids conflicting state such as saved XP saying 80 while a separately stored Egg counter says 60.
+
+## MD-002 Reward Burst Boundary
+
+UI-only reward states are:
 
 ```text
 idle
@@ -202,116 +170,54 @@ idle
 → rewardAnimationComplete
 ```
 
-Definitions:
+These states are never written to SaveData.
 
-- `idle`: Memory Prompt screen is waiting for user action.
-- `rewardModalOpen`: business settlement has already been attempted; reward modal is visible.
-- `rewardAnimationPlaying`: user tapped OK; star burst / Egg absorption feedback is playing.
-- `rewardAnimationComplete`: visual feedback finished or was intentionally skipped; UI may continue to Rating.
+Sequence:
 
-This state machine is view-only.
+```text
+I got it
+→ resolveMemoryPrompt(adventureId, "completed")
+→ open reward modal
+→ OK
+→ star burst toward shared Egg mini icon
+→ Egg glow / bump
+→ continue to Rating
+```
 
-### Business / Presentation Boundary
+Interrupted or skipped animation must not change XP correctness.
 
-When the user taps `I got it`:
+The animation target must be the actual shared Egg mini/progress UI state derived from persisted XP, not a decorative duplicate owned by the animation component.
 
-1. UI calls `resolveMemoryPrompt(adventureId, "completed")`.
-2. The adapter remains the only place that decides whether +5 XP is newly awarded.
-3. The UI may open the reward modal after the call returns.
-4. Animation components receive display data only; they never mutate SaveData or award XP.
+Reduced-motion may replace particle travel with a short +5 XP acknowledgment and Egg glow.
 
-The animation must not be the trigger for XP settlement.
+## Persistence Boundary
 
-If the animation is interrupted, skipped, reduced, or never mounts, persisted XP remains correct.
-
-Refreshing or navigating back may re-render the Memory Prompt step, but the existing idempotency guard prevents duplicate +5 XP.
-
-### Reduced Motion
-
-Respect `prefers-reduced-motion` where feasible.
-
-For reduced motion, replace the traveling star burst with a short static or near-static feedback such as:
-
-- brief +5 XP fade
-- one subtle Egg glow
-- immediate transition after user acknowledgement
-
-Reduced-motion handling must preserve the same business sequence and XP outcome.
-
-### Visual Constraints
-
-MD-002 should use:
-
-- small pale-yellow / champagne-gold stars
-- short duration
-- one directional burst toward the Egg mini icon
-- one Egg glow / bump
-- restrained particle count
-- no arcade-heavy sound or visual treatment
-
-The Egg remains secondary to the activity flow.
-
-## V1 Persistence Boundary
-
-All V1 adventure progress goes through:
-
-`src/lib/storage.ts`
+All V1 adventure progress goes through `src/lib/storage.ts`.
 
 The adapter owns:
 
-- starting an AdventureRecord
-- marking adventure completion
-- resolving Memory Prompt as completed or skipped
-- marking rating completion
-- calculating total XP
+- starting AdventureRecord
+- adventure completion
+- Memory Prompt resolution
+- Rating persistence and settlement
+- total XP derivation
+- Egg progress derivation
 - safe localStorage parsing and recovery
 
-UI components must call adapter functions and must not write localStorage directly.
+UI must not write localStorage directly.
 
-The persistence schema is versioned as `SaveData.version = 2` because the previous structure contained a photo URL assumption and did not support idempotent XP settlement.
-
-No migration of stored photo data is required. V1 stores no photo reference of any kind.
-
-## Egg Boundary
-
-Egg progress may read derived total XP, but:
-
-- Egg state must not modify DateIdea
-- activity discovery must not depend on Egg
-- Egg progress thresholds are a separate product rule
-- no inventory, economy, or collectible system is introduced by this contract
-
-MD-002 may animate toward an Egg mini icon, but that icon is a presentation target only. It must not become an XP authority or navigation requirement.
-
-## Content Source
-
-Canonical V1 activity content lives in:
-
-`src/data/dateIdeas.ts`
-
-Content owns the localized wording of each Memory Prompt. UI must not maintain a second prompt catalog.
-
-## State Management Rule
-
-Do not introduce Redux or another global state framework for this flow.
-
-Use the existing localStorage adapter plus local React state where needed.
-
-MD-002 transient states should remain local to the relevant flow container unless a small lifted state is required to coordinate the modal and Egg mini icon.
+`SaveData.version = 2` remains the V1 schema for this contract.
 
 ## Scope Protection
 
 Do not add:
 
-- image upload libraries
-- blob storage
-- Supabase solely for V1
-- backend APIs
-- photo verification
-- camera permission requirements
-- duplicate DateIdea DTOs
-- reward service layers or dependency injection
-- persisted animation state
-- animation-driven XP settlement
+- image upload/storage/backend
+- duplicate DateIdea contracts
+- separate XP counters
+- separately persisted Egg progress
+- reward service layers
+- Redux solely for this flow
+- animation state in SaveData
 
-Add only the minimum code needed to keep the canonical contract, client-side flow state, XP idempotency, and Egg boundary correct.
+Add only the minimum code required for canonical flow state, idempotent XP, Rating continuity, and deterministic Egg progression.
