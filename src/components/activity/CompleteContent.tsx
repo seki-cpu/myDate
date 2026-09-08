@@ -3,11 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { DateIdea } from "../../types/domain";
+import { loadSaveData, resolveMemoryPrompt } from "../../lib/storage";
+import { notifyEggProgressChanged, notifyEggRewardArrival } from "../egg/EggMiniProgress";
 import { flowCopy, localizeIdea, localizePhotoPrompt, useLocale } from "../ui/locale";
 import { RewardBurst, type RewardPoint } from "./RewardBurst";
 import styles from "./reward.module.css";
 
-interface CompleteContentProps { idea?: DateIdea; }
+interface CompleteContentProps {
+  idea?: DateIdea;
+  adventureId?: string;
+}
+
 type RewardPhase = "idle" | "modal" | "animating" | "done";
 
 const memoryPromptCopy = {
@@ -16,7 +22,7 @@ const memoryPromptCopy = {
   ja: { eyebrow: "思い出のヒント", title: "今日の小さな痕跡を残そう。", note: "顔は写さなくて大丈夫。写真はいつものスマホの写真フォルダに残るだけで、myDate へのアップロードは不要。撮っても、スキップしてもいい。", gotIt: "撮れた", skip: "スキップ", rewardTitle: "いい感じ！", rewardBody: "今日の小さな思い出をひとつ残せた。", ok: "OK" },
 } as const;
 
-export function CompleteContent({ idea }: CompleteContentProps) {
+export function CompleteContent({ idea, adventureId }: CompleteContentProps) {
   const router = useRouter();
   const locale = useLocale();
   const copy = flowCopy[locale];
@@ -28,7 +34,8 @@ export function CompleteContent({ idea }: CompleteContentProps) {
   const [sourcePosition, setSourcePosition] = useState<RewardPoint | null>(null);
   const [eggTargetPosition, setEggTargetPosition] = useState<RewardPoint | null>(null);
   const okButtonRef = useRef<HTMLButtonElement>(null);
-  const eggRef = useRef<HTMLDivElement>(null);
+
+  const ratingHref = adventureId ? `/rating?adventureId=${encodeURIComponent(adventureId)}` : "/rating";
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -38,26 +45,50 @@ export function CompleteContent({ idea }: CompleteContentProps) {
     return () => media.removeEventListener("change", sync);
   }, []);
 
-  function goHome() {
-    if (phase !== "idle") return;
-    setPhase("done");
-    router.push("/");
-  }
+  useEffect(() => {
+    if (!adventureId) return;
+    const record = loadSaveData().adventures.find((adventure) => adventure.id === adventureId);
+    if (record && record.memoryPromptStatus !== "pending") {
+      router.replace(ratingHref);
+    }
+  }, [adventureId, ratingHref, router]);
 
   function openRewardModal() {
     if (phase !== "idle") return;
+
+    if (adventureId) {
+      resolveMemoryPrompt(adventureId, "completed");
+      notifyEggProgressChanged();
+    }
+
     setPhase("modal");
+  }
+
+  function skipMemoryPrompt() {
+    if (phase !== "idle") return;
+    setPhase("done");
+
+    if (adventureId) {
+      resolveMemoryPrompt(adventureId, "skipped");
+      notifyEggProgressChanged();
+    }
+
+    router.push(ratingHref);
   }
 
   function playReward() {
     if (phase !== "modal") return;
     const sourceRect = okButtonRef.current?.getBoundingClientRect();
-    const eggRect = eggRef.current?.getBoundingClientRect();
+    const eggTarget = document.querySelector<HTMLElement>("[data-egg-mini-target]");
+    const eggRect = eggTarget?.getBoundingClientRect();
+
     if (!sourceRect || !eggRect) {
       setPhase("done");
-      router.push("/");
+      notifyEggRewardArrival();
+      router.push(ratingHref);
       return;
     }
+
     setSourcePosition({ x: sourceRect.left + sourceRect.width / 2, y: sourceRect.top + sourceRect.height / 2 });
     setEggTargetPosition({ x: eggRect.left + eggRect.width / 2, y: eggRect.top + eggRect.height / 2 });
     setPhase("animating");
@@ -66,17 +97,14 @@ export function CompleteContent({ idea }: CompleteContentProps) {
   function finishReward() {
     if (phase !== "animating") return;
     setPhase("done");
-    window.setTimeout(() => router.push("/"), reducedMotion ? 80 : 220);
+    notifyEggRewardArrival();
+    window.setTimeout(() => router.push(ratingHref), reducedMotion ? 80 : 220);
   }
 
   const actionLocked = phase !== "idle";
 
   return (
     <div className={styles.shell}>
-      <div ref={eggRef} className={`${styles.eggTarget}${phase === "animating" ? ` ${reducedMotion ? styles.reducedEgg : styles.eggReceiving}` : ""}`} aria-hidden="true">
-        <span className={styles.eggShape} />
-      </div>
-
       <p className="eyebrow">{copy.dateComplete}</p>
       <h1 className="page-title">{localizedIdea?.title ?? copy.finishedDate}</h1>
 
@@ -92,7 +120,7 @@ export function CompleteContent({ idea }: CompleteContentProps) {
         <button className="primary-button" type="button" onClick={openRewardModal} disabled={actionLocked}>
           {phase === "animating" || phase === "done" ? "…" : memoryCopy.gotIt}
         </button>
-        <button className="secondary-button" type="button" onClick={goHome} disabled={actionLocked}>
+        <button className="secondary-button" type="button" onClick={skipMemoryPrompt} disabled={actionLocked}>
           {memoryCopy.skip}
         </button>
       </div>
