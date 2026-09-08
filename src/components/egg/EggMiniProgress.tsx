@@ -55,14 +55,11 @@ export function EggMiniProgress() {
     <Link
       href="/egg"
       className={`${styles.root}${bumping ? ` ${styles.bump}` : ""}`}
-      aria-label={`Egg progress ${progress.totalXp} of ${progress.hatchXp} XP`}
+      aria-label="Shared Egg"
       data-egg-mini-target
       data-egg-stage={progress.stage}
     >
       <span className={styles.egg} aria-hidden="true" />
-      <span className={styles.progress} aria-hidden="true">
-        <span style={{ transform: `scaleX(${progress.progress})` }} />
-      </span>
     </Link>
   );
 }
