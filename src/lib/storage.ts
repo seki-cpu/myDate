@@ -1,5 +1,6 @@
 import type {
   AdventureRecord,
+  DateRating,
   MemoryPromptStatus,
   SaveData,
 } from "../types/domain";
@@ -11,6 +12,18 @@ export const XP_REWARDS = {
   memoryPrompt: 5,
   rating: 5,
 } as const;
+
+export const EGG_HATCH_XP = 100;
+
+export type EggStage = "dormant" | "warming" | "glowing" | "cracking" | "hatched";
+
+export interface EggProgress {
+  totalXp: number;
+  hatchXp: number;
+  progress: number;
+  stage: EggStage;
+  hatched: boolean;
+}
 
 function createEmptySaveData(): SaveData {
   return {
@@ -32,6 +45,10 @@ function isMemoryPromptStatus(value: unknown): value is MemoryPromptStatus {
   return value === "pending" || value === "completed" || value === "skipped";
 }
 
+function isDateRating(value: unknown): value is DateRating {
+  return value === 1 || value === 2 || value === 3 || value === 4 || value === 5;
+}
+
 function isAdventureRecord(value: unknown): value is AdventureRecord {
   if (!value || typeof value !== "object") return false;
 
@@ -46,6 +63,7 @@ function isAdventureRecord(value: unknown): value is AdventureRecord {
     isMemoryPromptStatus(candidate.memoryPromptStatus) &&
     (candidate.memoryPromptResolvedAt === undefined ||
       typeof candidate.memoryPromptResolvedAt === "string") &&
+    (candidate.rating === undefined || isDateRating(candidate.rating)) &&
     (candidate.ratingCompletedAt === undefined ||
       typeof candidate.ratingCompletedAt === "string") &&
     !!xpAwarded &&
@@ -101,6 +119,25 @@ export function getTotalXp(data: SaveData): number {
       (adventure.xpAwarded.rating ? XP_REWARDS.rating : 0)
     );
   }, 0);
+}
+
+export function getEggProgress(data: SaveData): EggProgress {
+  const totalXp = getTotalXp(data);
+  const progress = Math.min(totalXp / EGG_HATCH_XP, 1);
+
+  let stage: EggStage = "dormant";
+  if (totalXp >= EGG_HATCH_XP) stage = "hatched";
+  else if (totalXp >= 75) stage = "cracking";
+  else if (totalXp >= 50) stage = "glowing";
+  else if (totalXp >= 25) stage = "warming";
+
+  return {
+    totalXp,
+    hatchXp: EGG_HATCH_XP,
+    progress,
+    stage,
+    hatched: totalXp >= EGG_HATCH_XP,
+  };
 }
 
 function updateAdventure(
@@ -170,13 +207,16 @@ export function resolveMemoryPrompt(
   });
 }
 
-export function completeRating(adventureId: string): AdventureRecord | undefined {
+export function completeRating(
+  adventureId: string,
+  rating: DateRating,
+): AdventureRecord | undefined {
   return updateAdventure(adventureId, (adventure) => {
     if (adventure.memoryPromptStatus === "pending") return adventure;
-    if (adventure.xpAwarded.rating) return adventure;
 
     return {
       ...adventure,
+      rating,
       ratingCompletedAt: adventure.ratingCompletedAt ?? new Date().toISOString(),
       xpAwarded: { ...adventure.xpAwarded, rating: true },
     };
