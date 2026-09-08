@@ -22,23 +22,45 @@ export interface LocalizedText extends Record<string, string> {
   ja: string;
 }
 
+/**
+ * Canonical V1 activity contract.
+ * photoPrompt is the required localized Memory Prompt shown after completion.
+ * It never represents an uploaded or stored image.
+ */
 export interface DateIdea {
   id: string;
   title: LocalizedText;
   description: LocalizedText;
   littleMission?: LocalizedText;
+  photoPrompt: LocalizedText;
   categories: DateCategory[];
   cost: DateCost;
   duration: DateDuration;
   indoor: boolean;
   tags: string[];
-  photoPrompt?: LocalizedText;
 }
 
-export interface CompletedDate {
+export type MemoryPromptStatus = "pending" | "completed" | "skipped";
+
+export interface XpAwardState {
+  adventure: boolean;
+  memoryPrompt: boolean;
+  rating: boolean;
+}
+
+/**
+ * One user-started instance of a DateIdea.
+ * The same DateIdea may be started again later with a new id.
+ */
+export interface AdventureRecord {
+  id: string;
   dateId: string;
-  completedAt: string;
-  photoUrl?: string;
+  startedAt: string;
+  completedAt?: string;
+  memoryPromptStatus: MemoryPromptStatus;
+  memoryPromptResolvedAt?: string;
+  ratingCompletedAt?: string;
+  xpAwarded: XpAwardState;
 }
 
 export interface EggPreferences {
@@ -46,8 +68,8 @@ export interface EggPreferences {
 }
 
 export interface SaveData {
-  version: 1;
+  version: 2;
   savedDateIds: string[];
-  completedDates: CompletedDate[];
+  adventures: AdventureRecord[];
   egg?: EggPreferences;
 }
