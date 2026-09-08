@@ -2,22 +2,24 @@
 
 ## Architecture Goal
 
-Keep V1 small, but make later feature expansion possible without rewriting the product core.
+Keep V1 small, backend-free, and easy to test while preserving clean extension points.
 
-The architecture follows one rule:
+The product rule remains:
 
 **Activity First, Egg Second.**
 
-## Proposed Stack
+Date discovery and completion stay primary. Egg progress is a downstream reward layer and must never block activity discovery.
 
-- Next.js (App Router)
+## Stack
+
+- Next.js App Router
 - React
 - TypeScript
 - Tailwind CSS
-- React state / Context only when needed
-- localStorage for V1 persistence
-- Vitest + React Testing Library
-- Playwright for critical mobile flows
+- localStorage for V1 client-side persistence
+- no backend
+- no user account
+- no image upload or image database
 - Vercel for preview and production deployment
 
 ## Layering
@@ -27,112 +29,181 @@ UI / routes
    ↓
 shared domain types
    ↓
-content source + persistence adapter
+content source + local persistence adapter
 ```
 
 UI components must not redefine domain models or access localStorage directly.
 
-## Proposed Directory Shape
-
-```text
-src/
-  app/
-  components/
-    activity/
-    egg/
-    layout/
-    ui/
-  data/
-    dateIdeas.ts
-  lib/
-    storage.ts
-  types/
-    domain.ts
-
-docs/
-  product-design-v1.md
-  architecture.md
-  branch-policy.md
-  ui-boundaries.md
-  release-checklist.md
-```
-
-## Domain Contract Ownership
+## Canonical DateIdea Contract
 
 Canonical shared interfaces live in:
 
 `src/types/domain.ts`
 
-No feature branch may create a competing `DateIdea` or `SaveData` interface.
+There must be one DateIdea contract across types, content, and UI.
 
-## Date Content
+The V1 contract is:
 
-Canonical V1 content lives in:
+```ts
+interface DateIdea {
+  id: string;
+  title: LocalizedText;
+  description: LocalizedText;
+  littleMission?: LocalizedText;
+  photoPrompt: LocalizedText;
+  categories: DateCategory[];
+  cost: DateCost;
+  duration: DateDuration;
+  indoor: boolean;
+  tags: string[];
+}
+```
 
-`src/data/dateIdeas.ts`
+`LocalizedText` requires `zh`, `en`, and `ja` in V1 and may later add more locale keys without changing DateIdea.
 
-There must be exactly one source of truth for date ideas.
+## Memory Prompt
 
-UI may read this source, but content ownership belongs to the Date Content Developer.
+`photoPrompt` is the canonical field name for the V1 **Memory Prompt**.
 
-## Persistence
+It is required for every DateIdea and follows the same `LocalizedText` contract as title and description.
 
-All V1 persistence goes through:
+The Memory Prompt suggests one meaningful photo the user may take with their own phone camera and keep in their normal phone gallery.
+
+The prompt may focus on:
+
+- environment
+- objects
+- body details
+- shadows
+- food
+- souvenirs
+- shared creations
+- small visual details
+
+The prompt does not need to include both people.
+
+V1 must not:
+
+- upload photos
+- store photos
+- request image URLs
+- verify whether a photo was taken
+- add a photo database
+- add cloud image storage
+- add a backend for images
+
+The UI offers only two outcomes after showing the prompt:
+
+- `I got it`
+- `Skip`
+
+`I got it` means the user says they completed the prompt. The app does not verify this claim.
+
+## Canonical V1 Flow
+
+```text
+Date discovery
+→ Let's do it
+→ Adventure
+→ Complete
+→ Memory Prompt
+→ I got it / Skip
+→ Rating
+→ XP settlement
+→ Egg progress
+```
+
+The Egg is downstream from the activity flow. No DateIdea contains XP or Egg-specific fields.
+
+## Adventure Instance Identity
+
+XP idempotency requires each started activity to have a unique `adventureId`.
+
+The same DateIdea can be completed again later. Each new start creates a new AdventureRecord with a new id.
+
+Do not use `dateId` alone as an XP idempotency key.
+
+## XP Contract
+
+V1 XP values are fixed:
+
+- complete adventure: +20 XP
+- complete Memory Prompt (`I got it`): +5 XP
+- complete rating: +5 XP
+
+Skipping the Memory Prompt grants 0 XP for that source.
+
+Each AdventureRecord stores three award flags:
+
+```ts
+xpAwarded: {
+  adventure: boolean;
+  memoryPrompt: boolean;
+  rating: boolean;
+}
+```
+
+These flags are the idempotency boundary.
+
+Repeated clicks, refreshes, browser back navigation, or returning to a completed step must never grant the same source twice for the same `adventureId`.
+
+Total XP is derived from persisted award flags rather than incrementing an unguarded counter.
+
+## V1 Persistence Boundary
+
+All V1 adventure progress goes through:
 
 `src/lib/storage.ts`
 
-Components should never scatter direct `localStorage.getItem` / `setItem` calls throughout the codebase.
+The adapter owns:
 
-This boundary lets V1 use localStorage now while allowing a later cloud repository or Supabase adapter without changing activity UI contracts.
+- starting an AdventureRecord
+- marking adventure completion
+- resolving Memory Prompt as completed or skipped
+- marking rating completion
+- calculating total XP
+- safe localStorage parsing and recovery
 
-## Extension Strategy
+UI components must call adapter functions and must not write localStorage directly.
 
-V1 static content may later evolve into:
+The persistence schema is versioned as `SaveData.version = 2` because the previous structure contained a photo URL assumption and did not support idempotent XP settlement.
 
-```text
-static DateIdea[]
-      ↓
-remote content repository / database
-```
+No migration of stored photo data is required. V1 stores no photo reference of any kind.
 
-V1 local persistence may later evolve into:
+## Egg Boundary
 
-```text
-localStorage
-      ↓
-authenticated cloud sync
-```
+Egg progress may read derived total XP, but:
 
-V1 simple discovery may later evolve into:
+- Egg state must not modify DateIdea
+- activity discovery must not depend on Egg
+- Egg progress thresholds are a separate product rule
+- no inventory, economy, or collectible system is introduced by this contract
 
-```text
-filters + random
-      ↓
-recommendation engine
-```
+## Content Source
 
-The `DateIdea` model must remain independent from Egg state, user accounts, rewards, and recommendation scores.
+Canonical V1 activity content lives in:
+
+`src/data/dateIdeas.ts`
+
+Content owns the localized wording of each Memory Prompt. UI must not maintain a second prompt catalog.
 
 ## State Management Rule
 
-Do not introduce Redux or another global state framework in V1 unless actual cross-page state complexity proves it necessary.
+Do not introduce Redux or another global state framework for this flow.
 
-Preferred order:
-
-1. local component state
-2. lifted React state
-3. Context for truly shared lightweight state
-4. Zustand only if V1 complexity genuinely requires it
+Use the existing localStorage adapter plus local React state where needed.
 
 ## Scope Protection
 
-Avoid premature abstractions such as:
+Do not add:
 
-- service containers
-- dependency injection frameworks
-- repository hierarchies for every entity
-- backend APIs before a backend exists
-- duplicated DTO/domain types
-- speculative Egg/game systems
+- image upload libraries
+- blob storage
+- Supabase solely for V1
+- backend APIs
+- photo verification
+- camera permission requirements
+- duplicate DateIdea DTOs
+- reward service layers or dependency injection
 
-Add abstractions only where they protect a known boundary: domain contracts, content source, or persistence.
+Add only the minimum code needed to keep the canonical contract, client-side flow state, XP idempotency, and Egg boundary correct.
