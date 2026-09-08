@@ -28,7 +28,7 @@
 - [ ] Rating remains the next business step after reward handling or Skip
 - [ ] Rating accepts a private value from 1 to 5
 - [ ] XP settlement reflects completed sources
-- [ ] Egg progress reflects settled XP
+- [ ] Egg internal progression state reflects settled XP
 - [ ] Chinese / English / Japanese work across the primary flow
 
 ## Memory Prompt / MD-002 Contract
@@ -39,7 +39,7 @@
 - [ ] `I got it` commits +5 XP before presentation animation
 - [ ] Reward modal confirmation does not grant XP
 - [ ] Animation start / finish / replay does not grant XP
-- [ ] Reward animation targets the shared Egg mini/progress UI, not a decorative local copy
+- [ ] Reward animation targets the shared Egg mini UI, not a decorative local copy
 - [ ] Interrupted animation still permits continuation to Rating
 - [ ] Reduced-motion users receive a simplified reward acknowledgment
 
@@ -62,18 +62,20 @@
 - [ ] Repeated tap, repeated OK, refresh, back navigation, and animation replay do not duplicate XP
 - [ ] Same DateIdea started again gets a new `adventureId` and may earn XP normally
 
-## Egg Progression
+## Egg Internal Progression
 
-Canonical V1 hatch threshold is **100 XP**.
+Canonical V1 hatch threshold remains **100 XP** internally. V1 intentionally does **not** expose XP totals, progress bars, stage labels, crack visuals, or hatch visuals to the user.
 
-- [ ] 0–24 XP renders `dormant`
-- [ ] 25–49 XP renders `warming`
-- [ ] 50–74 XP renders `glowing`
-- [ ] 75–99 XP renders `cracking`
-- [ ] 100+ XP renders `hatched`
+- [ ] 0–24 XP resolves internally to `dormant`
+- [ ] 25–49 XP resolves internally to `warming`
+- [ ] 50–74 XP resolves internally to `glowing`
+- [ ] 75–99 XP resolves internally to `cracking`
+- [ ] 100+ XP resolves internally to `hatched`
 - [ ] Progress is calculated from persisted XP after refresh
 - [ ] No separate persisted Egg XP/progress counter can drift from total XP
-- [ ] Crossing 100 XP deterministically produces hatched state
+- [ ] Crossing 100 XP deterministically produces internal `hatched` state
+- [ ] V1 Egg UI does not expose growth progress, hatch stages, XP count, or progress bars
+- [ ] Egg mini remains the canonical reward animation target and still reacts on reward arrival
 
 ## Persistence
 
@@ -103,7 +105,7 @@ Canonical V1 hatch threshold is **100 XP**.
 - [ ] Reward modal / burst works
 - [ ] Rating works
 - [ ] XP settlement works
-- [ ] Egg progress / hatch works
+- [ ] Egg internal progression state remains correct while progression UI stays hidden
 - [ ] Refresh/back preserve the correct adventure instance
 - [ ] Adventure back navigation preserves the selected DateIdea
 - [ ] Category / duration / cost metadata remain localized
@@ -128,7 +130,7 @@ Canonical V1 hatch threshold is **100 XP**.
 - [ ] 10. Refresh during the reward sequence does not duplicate XP
 - [ ] 11. Back navigation does not duplicate XP
 - [ ] 12. Visual replay is allowed only when appropriate and never replays XP incorrectly
-- [ ] 13. Egg progress after the animation matches saved XP state
+- [ ] 13. Internal Egg progress after the animation matches saved XP state
 
 ### UI / Quality
 
@@ -144,7 +146,7 @@ Canonical V1 hatch threshold is **100 XP**.
 - [ ] 20. Memory Prompt still works when the user chooses `Skip`
 - [ ] 21. Rating still works after the reward flow
 - [ ] 22. Adventure → Complete → Memory Prompt → Rating → XP flow remains intact
-- [ ] 23. Egg hatch behavior remains correct after repeated completed dates
+- [ ] 23. Internal Egg progression / 100-XP hatch state remains correct after repeated completed dates; visible hatch UI is not required in V1
 - [ ] 24. localStorage persistence remains correct
 
 ## Explicitly Deferred
@@ -159,6 +161,7 @@ The following are not V1 release gates unless separately promoted into V1 scope:
 - completed date history / Memories history
 - interactive category / mood filters
 - Egg color persistence
+- visible Egg XP / growth progress / hatch-stage UI
 - complex Egg inventory / economy / collectibles
 - automated Playwright release gate
 
@@ -170,6 +173,7 @@ The following are not V1 release gates unless separately promoted into V1 scope:
 - [x] MD-002 presentation is connected to persisted XP without owning settlement
 - [x] PR #10 integration review passed and merged to `develop`
 - [x] `release/v1` refreshed from approved `develop`
+- [x] Lightweight Egg presentation applied directly to `release/v1` without changing shared XP/storage contract
 - [ ] Production build succeeds
 - [ ] Mobile smoke test passes
 - [ ] Deployment succeeds
