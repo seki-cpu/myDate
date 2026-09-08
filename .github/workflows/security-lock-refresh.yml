@@ -6,6 +6,7 @@ on:
       - fix/security-next-15.5.24
     paths:
       - package.json
+      - .github/workflows/security-lock-refresh.yml
 
 permissions:
   contents: write
