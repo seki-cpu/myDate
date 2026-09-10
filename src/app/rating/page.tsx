@@ -2,7 +2,7 @@ import { MobileShell } from "../../components/layout/MobileShell";
 import { RatingContent } from "../../components/activity/RatingContent";
 
 interface RatingPageProps {
-  searchParams?: Promise<{ adventureId?: string }>;
+  searchParams?: Promise<{ memoryId?: string }>;
 }
 
 export default async function RatingPage({ searchParams }: RatingPageProps) {
@@ -10,7 +10,7 @@ export default async function RatingPage({ searchParams }: RatingPageProps) {
 
   return (
     <MobileShell backHref="/">
-      <RatingContent adventureId={params?.adventureId} />
+      <RatingContent memoryId={params?.memoryId} />
     </MobileShell>
   );
 }
