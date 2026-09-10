@@ -13,7 +13,7 @@ export type DateCost = "free" | "low" | "medium" | "high";
 export type DateDuration = "short" | "medium" | "long";
 
 /**
- * V1 ships with Chinese, English, and Japanese.
+ * V2 ships with Chinese, English, and Japanese.
  * Additional locale keys may be added later without changing DateIdea.
  */
 export interface LocalizedText extends Record<string, string> {
@@ -23,9 +23,9 @@ export interface LocalizedText extends Record<string, string> {
 }
 
 /**
- * Canonical V1 activity contract.
- * photoPrompt is the required localized Memory Prompt shown after completion.
- * It never represents an uploaded or stored image.
+ * Canonical date activity content contract.
+ * photoPrompt remains the localized Memory Prompt shown after completion.
+ * V2 does not upload or store user photos.
  */
 export interface DateIdea {
   id: string;
@@ -40,39 +40,45 @@ export interface DateIdea {
   tags: string[];
 }
 
-export type MemoryPromptStatus = "pending" | "completed" | "skipped";
+export type RatingScore = 1 | 2 | 3 | 4 | 5;
 
-export type DateRating = 1 | 2 | 3 | 4 | 5;
-
-export interface XpAwardState {
-  adventure: boolean;
-  memoryPrompt: boolean;
-  rating: boolean;
+/**
+ * Private user-owned experience rating.
+ * overall preserves the V1 single-score rating without inventing new data.
+ * Optional dimensions may be used by V2 UI without making them required.
+ */
+export interface MemoryRating {
+  overall?: RatingScore;
+  fun?: RatingScore;
+  comfort?: RatingScore;
+  doAgain?: RatingScore;
 }
 
 /**
- * One user-started instance of a DateIdea.
- * The same DateIdea may be started again later with a new id.
+ * Primary completed-experience domain object in V2.
+ * One completed Adventure creates exactly one Memory.
  */
-export interface AdventureRecord {
+export interface Memory {
   id: string;
-  dateId: string;
-  startedAt: string;
-  completedAt?: string;
-  memoryPromptStatus: MemoryPromptStatus;
-  memoryPromptResolvedAt?: string;
-  rating?: DateRating;
-  ratingCompletedAt?: string;
-  xpAwarded: XpAwardState;
+  dateIdeaId: string;
+  completedAt: string;
+  memoryPromptCompleted: boolean;
+  rating?: MemoryRating;
 }
 
-export interface EggPreferences {
-  color: string;
+/**
+ * Lightweight in-progress activity state.
+ * Once completed, this session becomes a Memory with the same id.
+ */
+export interface AdventureSession {
+  id: string;
+  dateIdeaId: string;
+  startedAt: string;
 }
 
 export interface SaveData {
-  version: 2;
+  version: 3;
   savedDateIds: string[];
-  adventures: AdventureRecord[];
-  egg?: EggPreferences;
+  activeAdventures: AdventureSession[];
+  memories: Memory[];
 }

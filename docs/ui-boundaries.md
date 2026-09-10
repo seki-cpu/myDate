@@ -1,19 +1,18 @@
-# myDate UI Boundaries
+# myDate V2 Ownership Boundaries — MD-004 Memory First
 
 ## Product Priority
 
 The UI must preserve this order:
 
 1. Activity discovery
-2. Random / quick choice
+2. Random / lightweight category filtering
 3. Adventure flow
 4. Memory Prompt
-5. Reward feedback
-6. Rating
-7. XP settlement
-8. Egg progress
+5. Experience Rating
+6. Memory reward feedback
+7. Memories
 
-The Egg must not become the primary CTA or navigation gate.
+The product must not present relationship progression, Egg progression, XP, hatch state, or love/progress scoring.
 
 ## Mobile UI Developer Ownership
 
@@ -23,126 +22,114 @@ Primary ownership:
 - `src/components/activity/**`
 - `src/components/layout/**`
 - `src/components/ui/**`
-- `src/components/egg/**`
+- `src/components/memory/**` if introduced
 - UI-related assets
 
-UI responsibilities for the V1 flow:
+UI responsibilities:
 
-- consume the canonical DateIdea contract
-- render localized `photoPrompt` after completion
-- provide `I got it` and `Skip`
-- call shared persistence helpers for adventure / Memory Prompt / rating completion
-- preserve `adventureId` through refresh/back navigation
-- implement MD-002 reward feedback after successful `I got it`
-- implement the local presentation state sequence:
-  - `idle`
-  - `rewardModalOpen`
-  - `rewardAnimationPlaying`
-  - `rewardAnimationComplete`
-- show a lightweight reward modal before the animation
-- animate a small pale-yellow / champagne-gold star burst toward the Egg mini icon
-- make the Egg mini icon glow / bump once
-- respect reduced-motion preferences with a simpler fallback where feasible
-- continue to Rating even if the animation is skipped or interrupted
+- consume the canonical `DateIdea`, `AdventureSession`, and `Memory` contracts
+- preserve the active adventure id until completion
+- after `completeAdventure()`, continue the flow using the resulting Memory id
+- render localized `photoPrompt`
+- implement `I got it` / `Skip`
+- update Memory Prompt completion through the shared storage adapter
+- collect private experience rating and update the existing Memory
+- repurpose the existing gold-star reward effect toward the real Memories icon / Memory counter
+- show `+1 Memory` as presentation feedback only
+- render Memories from canonical persisted `memories[]`
+- make the shared Memory counter hydration-safe
+- respect reduced-motion preferences
 
 UI must not:
 
-- redefine DateIdea
-- maintain a second Memory Prompt catalog
-- upload photos
-- store photo URLs
-- access localStorage directly
-- grant XP by unguarded local component increments
-- make XP settlement depend on animation completion
-- persist reward modal or animation state
-- let animation components call persistence helpers directly
+- redefine shared domain types
+- write localStorage directly
+- create a Memory from animation completion
+- derive Memory count from XP
+- keep Egg or XP UI as a hidden source of truth
+- maintain a decorative duplicate Memory counter as the reward target
+- upload, store, or verify photos
 
-### MD-002 Component Boundary
+### Reward Component Boundary
 
 The flow/container component owns orchestration:
 
 ```text
-user action
-→ persistence adapter call
-→ local reward UI state
+persist business state
+→ local reward state
 → presentation animation
-→ next step
+→ next navigation state
 ```
 
-View-only animation components may receive props such as:
-
-- whether they are active
-- source position
-- Egg target position
-- reduced-motion flag
-- completion callback for UI sequencing only
-
-They must not receive SaveData mutation responsibilities.
+The animation component is view-only. It may receive source/target positions, reduced-motion state, and a UI completion callback. It must not receive storage mutation responsibilities.
 
 ## Date Content Developer Ownership
 
 Primary ownership:
 
 - `src/data/dateIdeas.ts`
-- future date-content assets directly tied to content
+- content documentation directly tied to date ideas
 
 Content responsibilities:
 
-- every DateIdea must contain localized `photoPrompt`
-- `photoPrompt` must provide `zh`, `en`, and `ja`
-- Memory Prompts should suggest one meaningful visual detail rather than default to posed couple photos
-- prompts may reference environment, objects, body details, shadows, food, souvenirs, creations, or small visual details
+- preserve one canonical localized `photoPrompt` for every DateIdea
+- keep zh/en/ja complete
+- keep prompts focused on meaningful visual details the user can save in their own phone gallery
+- avoid wording that implies upload, verification, relationship success, or couple permanence
+
+MD-004 does not require a content schema rewrite. `photoPrompt` remains the canonical localized Memory Prompt field.
 
 Content must not:
 
-- change shared types
-- create another prompt lookup table
-- add upload/storage language to Memory Prompts
-- rewrite UI layout or business logic
+- introduce a second Memory Prompt catalog
+- add partner identity or relationship score fields
+- modify shared domain types
+- implement persistence or UI logic
 
 ## Lead Architect Ownership
 
 Primary ownership:
 
 - `src/types/**`
-- `src/lib/storage.ts` persistence boundary
-- shared architecture boundaries
-- cross-feature contracts
+- `src/lib/storage.ts`
 - persistence schema/version
-- XP idempotency contract
-- architecture documentation
+- V1 → V2 migration contract
+- Memory identity/idempotency rules
+- architecture and ownership documentation
 
-Architect owns the rule that each started activity gets a unique `adventureId` and each XP source can be awarded at most once for that id.
+Architect owns these invariants:
 
-For MD-002, Architect also owns the rule that reward animation is presentation-only and requires no new SaveData field.
+- one completed Adventure creates exactly one Memory
+- Memory id reuses the AdventureSession id
+- Memory exists independently of Memory Prompt completion
+- Memory count is `memories.length`, never XP-derived
+- legacy XP/Egg state does not enter V2 business state
+- no relationship KPI is reintroduced under another name
 
 ## Troubleshooting Ownership
 
-Troubleshooting has exception-based access across files only for confirmed integration bugs.
+Troubleshooting may fix confirmed integration defects across files, but must preserve the V2 contract.
 
-Rule:
+Typical allowed fixes:
 
-> Fix the bug, not the architecture.
-
-Troubleshooting may fix:
-
-- broken `adventureId` propagation
-- stale flow state
-- modal that cannot dismiss
-- animation that never completes its UI callback
-- star burst targeting the wrong Egg icon
-- reduced-motion fallback failures
-- visual replay bugs
-- integration failures between the flow container and Egg mini icon
+- lost adventure/memory id across navigation
+- duplicate Memory creation caused by UI replay
+- migration failures for valid legacy records
+- corrupted localStorage recovery
+- stale Memory counter after a persisted update
+- reward animation targeting the wrong Memories element
+- reduced-motion failures
+- hydration mismatch in Memory counter/list UI
 
 Troubleshooting must not:
 
-- invent a second XP system
-- add persisted animation flags
-- move XP settlement into animation callbacks
-- create a second DateIdea contract or persistence path
+- reintroduce XP or Egg state as a shortcut
+- add a second persistence key for feature-specific state
+- create Memories from animation callbacks
+- infer memories from legacy XP
+- invent partner or relationship state
 
-Any non-trivial change to XP settlement, storage schema, or domain types requires Architect review.
+Non-trivial changes to domain types, migration, or persistence require Architect review.
 
 ## QA & Release Ownership
 
@@ -150,68 +137,50 @@ Primary ownership:
 
 - tests
 - e2e flows
+- migration regression
 - release checklist
-- CI/release configuration
+- release branch and production verification
 
 QA must verify:
 
-- every DateIdea includes a localized Memory Prompt
-- no photo upload/storage/backend behavior exists
-- `I got it` grants Memory Prompt XP once
-- `Skip` grants no Memory Prompt XP
-- adventure completion grants +20 once
-- rating completion grants +5 once
-- refresh/back/repeated actions do not duplicate any XP source
-- the same DateIdea can be started again as a new adventure and earn XP normally
-- Egg progress reads the correct derived XP
+- completed Adventure creates one Memory exactly once
+- Skip still produces a Memory
+- `I got it` sets `memoryPromptCompleted = true`
+- repeated `I got it` cannot duplicate a Memory
+- private rating updates the same Memory
+- Memory reward animation does not create or increment business state
+- Memory counter equals persisted Memory count
+- V1 completed adventures migrate one-to-one into V2 Memories
+- V1 XP/Egg state is ignored
+- corrupted current or legacy data fails safely
+- no Egg/XP/relationship progression UI remains reachable
+- no photo upload/storage/backend behavior is introduced
+- zh/en/ja primary flow remains intact
+- mobile and reduced-motion behavior remains usable
 
-MD-002 QA must additionally verify:
+QA should report product defects rather than adding new features on the release branch.
 
-- tapping `I got it` attempts business settlement before reward presentation
-- reward modal opens after the action
-- tapping `OK` starts the presentation-only reward animation
-- star burst travels toward the Egg mini icon under normal motion settings
-- Egg mini icon glows / bumps once
-- interrupting or skipping the animation does not lose or duplicate XP
-- refreshing after `I got it` does not grant another +5 XP
-- going back and tapping `I got it` again does not grant another +5 XP
-- replaying a visual effect does not change persisted XP
-- reduced-motion users receive a simpler non-traveling feedback where supported
-- Rating remains reachable even if the animation is interrupted
+## Obsolete V1 UI
 
-QA should report product bugs instead of silently changing architecture on `release/v1`.
+The following V1 UI concepts are obsolete in V2 and should be removed by UI after the V2 contract is integrated:
+
+- `/egg` route
+- `EggMiniProgress`
+- `EggView`
+- Egg-specific CSS modules/assets
+- Egg links in `MobileShell` or Memories
+- XP labels / XP delta feedback
+- hatch/progression copy and visuals
+
+The existing `RewardBurst` visual may be reused after making its target semantics generic or Memory-specific.
 
 ## Data Boundary Rule
 
-Components must not hard-code independent activity datasets or Memory Prompts.
-
-Good:
+Components must consume canonical sources:
 
 ```ts
 import { dateIdeas } from "@/data/dateIdeas";
+import { getMemories } from "@/lib/storage";
 ```
 
-There must be one canonical DateIdea source in V1.
-
-## Visual Direction
-
-V1 visual language:
-
-- mobile first
-- white dominant background
-- subtle gold accent / shimmer
-- minimal and calm
-- quick scanning
-- limited decoration
-- generous but not wasteful spacing
-
-MD-002 reward feedback should use:
-
-- small pale-yellow / champagne-gold stars
-- restrained particle count
-- short duration
-- one directional motion toward Egg
-- one soft Egg glow / bump
-- no loud arcade-heavy presentation
-
-XP and Egg feedback should feel like a lightweight reward after the activity, not the reason to use the product.
+There must be one canonical date idea source and one canonical persisted Memory source.

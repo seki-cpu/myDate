@@ -11,7 +11,7 @@ export default async function AdventurePage({ searchParams }: AdventurePageProps
   const idea = dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
-    <MobileShell backHref={idea ? `/result?id=${idea.id}` : "/result"}>
+    <MobileShell backHref="/result">
       <AdventureContent idea={idea} adventureId={params?.adventureId} />
     </MobileShell>
   );

@@ -3,7 +3,7 @@ import { MobileShell } from "../../components/layout/MobileShell";
 import { CompleteContent } from "../../components/activity/CompleteContent";
 
 interface CompletePageProps {
-  searchParams?: Promise<{ id?: string; adventureId?: string }>;
+  searchParams?: Promise<{ id?: string; memoryId?: string }>;
 }
 
 export default async function CompletePage({ searchParams }: CompletePageProps) {
@@ -12,7 +12,7 @@ export default async function CompletePage({ searchParams }: CompletePageProps) 
 
   return (
     <MobileShell backHref="/">
-      <CompleteContent idea={idea} adventureId={params?.adventureId} />
+      <CompleteContent idea={idea} memoryId={params?.memoryId} />
     </MobileShell>
   );
 }

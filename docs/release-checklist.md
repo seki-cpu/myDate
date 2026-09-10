@@ -1,189 +1,142 @@
-# myDate V1 Release Checklist
+# myDate V2 Release Checklist — MD-004 Memory First
 
 ## Architecture
 
-- [ ] One canonical `DateIdea` contract is used across types, content, and UI
-- [ ] `photoPrompt` is required and localized on every DateIdea
-- [ ] No legacy singular `category` field remains in V1 integration points
-- [ ] One canonical date content source
-- [ ] No photo URL or image reference exists in the V1 domain model
-- [ ] No backend or cloud image storage is introduced
-- [ ] XP settlement is tied to a unique `adventureId`
-- [ ] Total XP is derived from persisted `xpAwarded` flags
-- [ ] Egg progress is derived from total XP, not persisted separately
-- [ ] Egg state remains separated from DateIdea
-- [ ] MD-002 reward presentation remains separated from XP settlement / persistence logic
+- [ ] One canonical `DateIdea` contract is used across content and UI
+- [ ] One canonical `Memory` contract is used across domain, persistence, and UI
+- [ ] `SaveData.version = 3` is the only V2 persisted schema
+- [ ] Memory count is derived from `memories.length`
+- [ ] No XP, Egg, hatch, love, or relationship progression state remains in V2 business logic
+- [ ] No photo URL, image data, backend, or cloud storage is introduced
+- [ ] UI does not access localStorage directly
 
-## Product Flow
+## Core Flow
 
-- [ ] Home loads and user can discover a date idea immediately
 - [ ] Browse works
-- [ ] Random works
+- [ ] Random discovery works
+- [ ] Lightweight category filtering works
 - [ ] Date detail works
-- [ ] Start creates a unique adventure instance
-- [ ] Adventure completion works
-- [ ] Memory Prompt appears after completion
-- [ ] `I got it` and `Skip` both resolve Memory Prompt
-- [ ] MD-002 reward feedback appears after `I got it`
-- [ ] Rating remains the next business step after reward handling or Skip
-- [ ] Rating accepts a private value from 1 to 5
-- [ ] XP settlement reflects completed sources
-- [ ] Egg internal progression state reflects settled XP
-- [ ] Chinese / English / Japanese work across the primary flow
+- [ ] `Let's do it` creates one AdventureSession
+- [ ] Adventure works
+- [ ] Adventure Complete creates one Memory
+- [ ] Memory Prompt appears for that Memory
+- [ ] `I got it` sets `memoryPromptCompleted = true`
+- [ ] `Skip` leaves `memoryPromptCompleted = false`
+- [ ] Both Memory Prompt paths continue to Experience Rating
+- [ ] Rating updates the same Memory
+- [ ] Memory reward animation runs after rating
+- [ ] Reward targets the shared Memories icon/counter
+- [ ] Memories view displays persisted Memories
 
-## Memory Prompt / MD-002 Contract
+## Memory Identity / Idempotency
 
-- [ ] Every DateIdea has `photoPrompt.zh`, `.en`, and `.ja`
-- [ ] App does not verify whether a photo was actually taken
-- [ ] No upload control or image persistence exists
-- [ ] `I got it` commits +5 XP before presentation animation
-- [ ] Reward modal confirmation does not grant XP
-- [ ] Animation start / finish / replay does not grant XP
-- [ ] Reward animation targets the shared Egg mini UI, not a decorative local copy
-- [ ] Interrupted animation still permits continuation to Rating
-- [ ] Reduced-motion users receive a simplified reward acknowledgment
+- [ ] `AdventureSession.id` becomes `Memory.id`
+- [ ] Repeated Adventure completion cannot create duplicate Memories
+- [ ] Refresh after completion does not create another Memory
+- [ ] Back navigation and repeated taps do not create another Memory
+- [ ] Replaying reward animation does not change Memory count
+- [ ] Memory Prompt completion never creates an additional Memory
+- [ ] Rating never creates an additional Memory
 
-## Rating
+## V1 → V2 Migration
 
-- [ ] Rating is tied to the same `adventureId`
-- [ ] Rating cannot settle while Memory Prompt status is `pending`
-- [ ] `Skip` continues to Rating
-- [ ] Selected rating has a visible state and accessible radio semantics
-- [ ] Submitting a 1–5 rating grants +5 XP exactly once
-- [ ] Changing an already submitted rating does not grant another +5 XP
-- [ ] Refresh/back navigation preserves submitted rating and settlement state
+- [ ] A valid V2 save is loaded without running migration again
+- [ ] Current V1 `mydate.save.v2` data is detected when no valid V2 save exists
+- [ ] Every V1 AdventureRecord with `completedAt` becomes exactly one V2 Memory
+- [ ] Incomplete V1 adventures do not become Memories
+- [ ] V1 `memoryPromptStatus === "completed"` maps to `memoryPromptCompleted = true`
+- [ ] Other V1 Memory Prompt states map to `false`
+- [ ] Valid V1 1–5 rating maps to `rating.overall`
+- [ ] V1 XP flags do not affect Memory count
+- [ ] V1 Egg preferences/progress do not enter V2 state
+- [ ] Older `mydate.save.v1.completedDates[]` records migrate safely when applicable
+- [ ] Invalid legacy records are skipped without crashing
+- [ ] Four completed legacy experiences result in four Memories regardless of XP
 
-## XP / Idempotency
+## Memory Rating
 
-- [ ] Adventure completion grants +20 exactly once per `adventureId`
-- [ ] Memory Prompt `I got it` grants +5 exactly once per `adventureId`
-- [ ] Memory Prompt `Skip` grants 0 for that source
-- [ ] Rating completion grants +5 exactly once per `adventureId`
-- [ ] Repeated tap, repeated OK, refresh, back navigation, and animation replay do not duplicate XP
-- [ ] Same DateIdea started again gets a new `adventureId` and may earn XP normally
+- [ ] Rating is private and attached to Memory
+- [ ] Legacy overall rating is preserved without fabricating `fun`, `comfort`, or `doAgain`
+- [ ] Any collected rating dimension accepts only 1–5
+- [ ] Rating may be absent without invalidating the Memory
+- [ ] Updating rating does not change Memory count
 
-## Egg Internal Progression
+## Reward Animation
 
-Canonical V1 hatch threshold remains **100 XP** internally. V1 intentionally does **not** expose XP totals, progress bars, stage labels, crack visuals, or hatch visuals to the user.
+- [ ] Existing pale-yellow / champagne-gold visual language is preserved
+- [ ] Old Egg/XP meaning is removed
+- [ ] New meaning is `+1 Memory`
+- [ ] Animation targets a real shared Memories icon/counter
+- [ ] Animation is presentation-only
+- [ ] Interrupted animation does not lose an already-created Memory
+- [ ] Replayed animation does not duplicate a Memory
+- [ ] Reduced-motion users receive a simplified acknowledgment
+- [ ] No XP badge or XP delta is displayed
 
-- [ ] 0–24 XP resolves internally to `dormant`
-- [ ] 25–49 XP resolves internally to `warming`
-- [ ] 50–74 XP resolves internally to `glowing`
-- [ ] 75–99 XP resolves internally to `cracking`
-- [ ] 100+ XP resolves internally to `hatched`
-- [ ] Progress is calculated from persisted XP after refresh
-- [ ] No separate persisted Egg XP/progress counter can drift from total XP
-- [ ] Crossing 100 XP deterministically produces internal `hatched` state
-- [ ] V1 Egg UI does not expose growth progress, hatch stages, XP count, or progress bars
-- [ ] Egg mini remains the canonical reward animation target and still reacts on reward arrival
+## Egg / XP Removal
 
-## Persistence
+- [ ] `/egg` route is removed
+- [ ] `EggMiniProgress` is removed
+- [ ] `EggView` is removed
+- [ ] Egg-specific styles/assets are removed when unused
+- [ ] Egg links are removed from navigation and Memories
+- [ ] `XP_REWARDS`, `EGG_HATCH_XP`, `getTotalXp`, and `getEggProgress` are absent from V2
+- [ ] `xpAwarded`, Egg preferences, hatch fields, and progression fields are absent from V2 SaveData
+- [ ] No hidden relationship KPI replaces the removed systems
 
-- [ ] V1 uses localStorage only
-- [ ] Adventure state survives refresh where required by the flow
-- [ ] Corrupted or invalid save data fails safely without crashing
-- [ ] UI consumes shared storage helpers rather than defining its own persistence contract
+## Memories
+
+- [ ] Memories page reads canonical persisted `memories[]`
+- [ ] Memory count equals persisted Memory array length
+- [ ] Empty state works
+- [ ] Migrated V1 Memories render without crashing
+- [ ] A Memory remains valid when Memory Prompt was skipped
+- [ ] A Memory remains valid without rating
+- [ ] Missing/deleted DateIdea content is handled gracefully for legacy Memory records
+
+## Persistence / Recovery
+
+- [ ] V2 uses localStorage only
+- [ ] `mydate.save.v3` survives refresh
+- [ ] Corrupted V2 data fails safely
+- [ ] Corrupted legacy data fails safely
+- [ ] Legacy keys do not override a valid V2 save
 - [ ] No image data is persisted
 
-## Mobile
+## Localization / Mobile
 
-- [ ] 320 × 568 usable
-- [ ] 375 × 812 usable
-- [ ] 390 × 844 usable
-- [ ] 430 × 932 usable
+- [ ] zh/en/ja primary flow works
+- [ ] Memory Prompt remains localized
+- [ ] Memories and Memory reward copy are localized
+- [ ] 320px usable
+- [ ] 375px usable
+- [ ] 390px usable
 - [ ] No horizontal overflow
-- [ ] Primary CTA has comfortable touch target
-- [ ] Reward modal and animation do not block required navigation
-- [ ] Core flow works with one-hand mobile use
+- [ ] No release-blocking hydration or console errors
 
-## Core Regression
-
-- [ ] Home loads
-- [ ] Browse / random / detail work
-- [ ] Start / Adventure / Complete work
-- [ ] Memory Prompt works
-- [ ] Reward modal / burst works
-- [ ] Rating works
-- [ ] XP settlement works
-- [ ] Egg internal progression state remains correct while progression UI stays hidden
-- [ ] Refresh/back preserve the correct adventure instance
-- [ ] Adventure back navigation preserves the selected DateIdea
-- [ ] Category / duration / cost metadata remain localized
-- [ ] No release-blocking console errors
-
-## MD-002 Reward Burst to Egg Regression
-
-### Functional
-
-- [ ] 1. Tapping `I got it` shows the reward modal
-- [ ] 2. Reward modal copy is visible and readable on mobile
-- [ ] 3. Tapping `OK` starts the reward animation
-- [ ] 4. Reward animation visibly travels toward the Egg mini icon
-- [ ] 5. Egg mini icon reacts when the reward arrives
-- [ ] 6. Flow continues correctly after the animation
-
-### XP Integrity
-
-- [ ] 7. `I got it` grants exactly +5 XP
-- [ ] 8. `I got it` cannot grant +5 XP twice
-- [ ] 9. Repeated `OK` taps do not duplicate XP
-- [ ] 10. Refresh during the reward sequence does not duplicate XP
-- [ ] 11. Back navigation does not duplicate XP
-- [ ] 12. Visual replay is allowed only when appropriate and never replays XP incorrectly
-- [ ] 13. Internal Egg progress after the animation matches saved XP state
-
-### UI / Quality
-
-- [ ] 14. Effect remains subtle and not visually overwhelming
-- [ ] 15. Star color feels light / warm / champagne-like
-- [ ] 16. Modal and animation work on all supported mobile viewports
-- [ ] 17. No visual overlap blocks important controls
-- [ ] 18. Reduced-motion behavior remains usable
-- [ ] 19. Rapid interaction produces no console errors
-
-### Regression
-
-- [ ] 20. Memory Prompt still works when the user chooses `Skip`
-- [ ] 21. Rating still works after the reward flow
-- [ ] 22. Adventure → Complete → Memory Prompt → Rating → XP flow remains intact
-- [ ] 23. Internal Egg progression / 100-XP hatch state remains correct after repeated completed dates; visible hatch UI is not required in V1
-- [ ] 24. localStorage persistence remains correct
-
-## Explicitly Deferred
-
-The following are not V1 release gates unless separately promoted into V1 scope:
+## Explicitly Not V2
 
 - user accounts
+- backend
 - cloud sync
-- photo upload / photo database / cloud photo storage
-- photo verification
-- saved activity persistence
-- completed date history / Memories history
-- interactive category / mood filters
-- Egg color persistence
-- visible Egg XP / growth progress / hatch-stage UI
-- complex Egg inventory / economy / collectibles
-- automated Playwright release gate
+- photo upload/storage/verification
+- partner profiles
+- relationship progression
+- relationship success/failure score
+- Solo mode
+- replacement currency or gamification economy
 
 ## Release
 
-- [x] Architect MD-002 contract approved
-- [x] Content migrated to required Memory Prompts
-- [x] UI implements Rating continuity and shared Egg target
-- [x] MD-002 presentation is connected to persisted XP without owning settlement
-- [x] PR #10 integration review passed and merged to `develop`
-- [x] `release/v1` refreshed from approved `develop`
-- [x] Lightweight Egg presentation applied directly to `release/v1` without changing shared XP/storage contract
-- [x] Production typecheck succeeds
-- [x] Production build succeeds
+- [ ] Architect V2 contract approved
+- [ ] Content reviewed for Memory First semantics
+- [ ] UI removed Egg/XP dependencies and implemented Memory flow
+- [ ] Troubleshooting regression fixes preserve the canonical contract
+- [ ] Migration tests pass
+- [ ] Production build succeeds
 - [ ] Mobile smoke test passes
-- [ ] Deployment succeeds
-- [ ] Production smoke test passes
-- [ ] Final GA QA approval
-- [ ] Lead Architect final GA approval
+- [ ] Deployment smoke test passes
+- [ ] QA approval
+- [ ] Lead Architect approval
 
-## Lightweight Beta Exception
-
-For the 2026-09-08 lightweight beta, the product owner explicitly approved shipping before the remaining mobile/runtime/deployment smoke gates are complete.
-
-This exception permits `release/v1` to merge into `master` as an early beta only. It does **not** convert the unchecked final-GA gates above into PASS.
+Do not merge V2 into `master` until all V2 release gates pass.

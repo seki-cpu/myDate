@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { DateIdea } from "../../types/domain";
 import { startAdventure } from "../../lib/storage";
-import { getCategoryLabel } from "../ui/categoryLabel";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface ResultContentProps {
@@ -18,7 +17,6 @@ export function ResultContent({ idea }: ResultContentProps) {
   const locale = useLocale();
   const copy = flowCopy[locale];
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
-  const primaryCategory = localizedIdea?.categories[0];
 
   if (!localizedIdea) {
     return (
@@ -35,20 +33,19 @@ export function ResultContent({ idea }: ResultContentProps) {
     );
   }
 
-  const ideaId = localizedIdea.id;
-
   function beginAdventure() {
-    if (starting) return;
+    if (starting || !localizedIdea) return;
     setStarting(true);
-    const adventure = startAdventure(ideaId);
-    router.push(`/adventure?id=${ideaId}&adventureId=${adventure.id}`);
+    const dateId = localizedIdea.id;
+    const adventure = startAdventure(dateId);
+    router.push(`/adventure?id=${dateId}&adventureId=${adventure.id}`);
   }
 
   return (
     <>
       <section className="result-hero">
         <div className="result-number">{copy.resultPick}</div>
-        <p className="eyebrow">{primaryCategory ? getCategoryLabel(primaryCategory, locale) : ""}</p>
+        <p className="eyebrow">{localizedIdea.categories[0] ?? ""}</p>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
         <div className="detail-grid">
