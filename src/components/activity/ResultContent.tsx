@@ -34,10 +34,11 @@ export function ResultContent({ idea }: ResultContentProps) {
   }
 
   function beginAdventure() {
-    if (starting) return;
+    if (starting || !localizedIdea) return;
     setStarting(true);
-    const adventure = startAdventure(localizedIdea.id);
-    router.push(`/adventure?id=${localizedIdea.id}&adventureId=${adventure.id}`);
+    const dateId = localizedIdea.id;
+    const adventure = startAdventure(dateId);
+    router.push(`/adventure?id=${dateId}&adventureId=${adventure.id}`);
   }
 
   return (
