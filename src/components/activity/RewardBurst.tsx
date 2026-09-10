@@ -8,7 +8,7 @@ export interface RewardPoint { x: number; y: number; }
 interface RewardBurstProps {
   active: boolean;
   sourcePosition: RewardPoint | null;
-  eggTargetPosition: RewardPoint | null;
+  targetPosition: RewardPoint | null;
   reducedMotion: boolean;
   onAnimationComplete: () => void;
 }
@@ -17,16 +17,16 @@ const STAR_OFFSETS = [
   { x: -22, y: -16 }, { x: 18, y: -22 }, { x: -10, y: 12 }, { x: 24, y: 8 }, { x: 2, y: -34 },
 ];
 
-export function RewardBurst({ active, sourcePosition, eggTargetPosition, reducedMotion, onAnimationComplete }: RewardBurstProps) {
+export function RewardBurst({ active, sourcePosition, targetPosition, reducedMotion, onAnimationComplete }: RewardBurstProps) {
   useEffect(() => {
     if (!active) return;
     const timeout = window.setTimeout(onAnimationComplete, reducedMotion ? 380 : 920);
     return () => window.clearTimeout(timeout);
   }, [active, reducedMotion, onAnimationComplete]);
 
-  if (!active || !sourcePosition || !eggTargetPosition) return null;
-  const deltaX = eggTargetPosition.x - sourcePosition.x;
-  const deltaY = eggTargetPosition.y - sourcePosition.y;
+  if (!active || !sourcePosition || !targetPosition) return null;
+  const deltaX = targetPosition.x - sourcePosition.x;
+  const deltaY = targetPosition.y - sourcePosition.y;
 
   return (
     <div className={`${styles.burst}${reducedMotion ? ` ${styles.reduced}` : ""}`} aria-hidden="true">
