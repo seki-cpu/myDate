@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { DateIdea } from "../../types/domain";
 import { completeAdventure } from "../../lib/storage";
-import { notifyEggProgressChanged } from "../egg/EggMiniProgress";
+import { notifyMemoryChanged } from "../memory/MemoryMiniCounter";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface AdventureContentProps {
@@ -25,12 +25,12 @@ export function AdventureContent({ idea, adventureId }: AdventureContentProps) {
 
     if (adventureId) {
       completeAdventure(adventureId);
-      notifyEggProgressChanged();
+      notifyMemoryChanged();
     }
 
     const params = new URLSearchParams();
     if (localizedIdea) params.set("id", localizedIdea.id);
-    if (adventureId) params.set("adventureId", adventureId);
+    if (adventureId) params.set("memoryId", adventureId);
     router.push(`/complete?${params.toString()}`);
   }
 
