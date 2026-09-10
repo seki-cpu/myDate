@@ -14,7 +14,7 @@
 
 - [ ] Browse works
 - [ ] Random discovery works
-- [ ] Lightweight category filtering works if present in V2 UI
+- [ ] Lightweight category filtering works
 - [ ] Date detail works
 - [ ] `Let's do it` creates one AdventureSession
 - [ ] Adventure works
