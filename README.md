@@ -4,6 +4,12 @@
 
 myDate is a mobile-first web app for discovering date ideas and keeping small memories from real experiences.
 
+From finalized product design to the lightweight V1, the total implementation effort was approximately **8 working hours**.
+
+从产品设计确定到轻量版 V1，整体实现投入约 **8 个工时**。
+
+プロダクト設計の確定から軽量版 V1 まで、実装工数は約 **8時間** です。
+
 ---
 
 # 中文
