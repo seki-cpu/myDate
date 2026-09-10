@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { LanguageMenu } from "../ui/LanguageMenu";
-import { EggMiniProgress } from "../egg/EggMiniProgress";
+import { MemoryMiniCounter } from "../memory/MemoryMiniCounter";
 
 interface MobileShellProps {
   children: ReactNode;
@@ -33,7 +33,7 @@ export function MobileShell({
         )}
 
         <div className="topbar-actions">
-          <EggMiniProgress />
+          <MemoryMiniCounter />
           <LanguageMenu />
           {hasTrailingAction ? (
             <Link className="section-link" href={trailingHref!}>
