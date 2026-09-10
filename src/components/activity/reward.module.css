@@ -1,8 +1,4 @@
 .shell { position: relative; }
-.eggTarget { position:absolute; top:-4px; right:0; display:grid; width:42px; height:42px; place-items:center; border:1px solid rgba(184,148,82,.22); border-radius:999px; background:rgba(255,255,255,.86); box-shadow:0 8px 20px rgba(56,43,22,.06); }
-.eggShape { width:19px; height:24px; border:1px solid rgba(184,148,82,.36); border-radius:52% 48% 46% 54% / 62% 62% 38% 38%; background:linear-gradient(145deg,#fff9e9,#ead5a9); }
-.eggReceiving { animation:egg-receive 420ms ease-out 620ms both; }
-.reducedEgg { animation:egg-glow 300ms ease-out 80ms both; }
 .promptFocus { position:relative; overflow:hidden; padding:26px 22px 24px; border:1px solid rgba(236,230,221,.92); border-radius:28px; background:#fff; box-shadow:0 12px 30px rgba(56,43,22,.07); }
 .promptFocus::after { content:""; position:absolute; right:-40px; bottom:-54px; width:140px; height:140px; border-radius:999px; background:#fbf6e9; }
 .promptIcon { position:relative; z-index:1; display:grid; width:42px; height:42px; margin-bottom:18px; place-items:center; border-radius:14px; background:#fbf6e9; color:#b89452; font-size:21px; }
@@ -22,7 +18,5 @@
 .reduced .star { animation:star-fade 260ms ease-out var(--reward-delay) forwards; }
 @keyframes star-travel { 0%{opacity:0;transform:translate3d(0,0,0) scale(.7) rotate(0deg)} 18%{opacity:.95} 100%{opacity:0;transform:translate3d(var(--reward-x),var(--reward-y),0) scale(.5) rotate(120deg)} }
 @keyframes star-fade { 0%{opacity:0;transform:scale(.8)} 45%{opacity:.85;transform:scale(1)} 100%{opacity:0;transform:scale(.9)} }
-@keyframes egg-receive { 0%{transform:scale(1);box-shadow:0 8px 20px rgba(56,43,22,.06)} 45%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(217,189,115,.16),0 10px 26px rgba(184,148,82,.16)} 100%{transform:scale(1);box-shadow:0 8px 20px rgba(56,43,22,.06)} }
-@keyframes egg-glow { 0%{box-shadow:0 8px 20px rgba(56,43,22,.06)} 50%{box-shadow:0 0 0 7px rgba(217,189,115,.14)} 100%{box-shadow:0 8px 20px rgba(56,43,22,.06)} }
 @keyframes modal-in { from{opacity:0;transform:translateY(10px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
 @media (prefers-reduced-motion: reduce) { .modal { animation:none; } }
