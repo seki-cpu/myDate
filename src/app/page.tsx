@@ -11,7 +11,7 @@ export default function HomePage() {
   const copy = uiCopy[locale];
 
   return (
-    <MobileShell trailingHref="/egg" trailingLabel="Egg">
+    <MobileShell>
       <section>
         <p className="eyebrow">{copy.eyebrow}</p>
         <h1 className="hero-title">{copy.heroTitle}</h1>
