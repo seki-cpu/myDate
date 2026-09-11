@@ -2,35 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import type { ActivityIdentity, DateIdea } from "../../types/domain";
-import { hasTriedActivity, startAdventure } from "../../lib/storage";
+import { useState } from "react";
+import type { DateIdea } from "../../types/domain";
+import { startAdventure } from "../../lib/storage";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
-import triedStyles from "./tried.module.css";
+import { TriedBadge } from "./TriedBadge";
 
 interface ResultContentProps {
   idea?: DateIdea;
 }
 
-const triedCopy = {
-  zh: "做过",
-  en: "Tried",
-  ja: "体験済み",
-} as const;
-
 export function ResultContent({ idea }: ResultContentProps) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
-  const [tried, setTried] = useState(false);
   const locale = useLocale();
   const copy = flowCopy[locale];
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
-
-  useEffect(() => {
-    if (!idea) return;
-    const identity: ActivityIdentity = { source: "builtin", id: idea.id };
-    setTried(hasTriedActivity(identity));
-  }, [idea]);
 
   if (!localizedIdea || !idea) {
     return (
@@ -63,7 +50,7 @@ export function ResultContent({ idea }: ResultContentProps) {
         <div className="result-number">{copy.resultPick}</div>
         <div className="activity-meta">
           <span className="eyebrow">{localizedIdea.categories[0] ?? ""}</span>
-          {tried ? <span className={triedStyles.badge}>{triedCopy[locale]}</span> : null}
+          <TriedBadge identity={{ source: "builtin", id: idea.id }} />
         </div>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
