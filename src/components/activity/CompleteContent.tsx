@@ -91,7 +91,7 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
     if (!sourceRect || !targetRect) {
       notifyMemoryReward(1);
       setPhase("done");
-      router.push("/");
+      window.setTimeout(() => router.push("/"), reducedMotion ? 500 : 1100);
       return;
     }
 
@@ -110,7 +110,7 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
     setPhase((current) => {
       if (current !== "animating") return current;
       notifyMemoryReward(1);
-      window.setTimeout(() => router.push("/"), reducedMotion ? 120 : 260);
+      window.setTimeout(() => router.push("/"), reducedMotion ? 500 : 1100);
       return "done";
     });
   }, [reducedMotion, router]);
