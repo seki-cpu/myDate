@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { DateIdea } from "../../types/domain";
 import { startAdventure } from "../../lib/storage";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
+import { TriedBadge } from "./TriedBadge";
 
 interface ResultContentProps {
   idea?: DateIdea;
@@ -18,7 +19,7 @@ export function ResultContent({ idea }: ResultContentProps) {
   const copy = flowCopy[locale];
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
 
-  if (!localizedIdea) {
+  if (!localizedIdea || !idea) {
     return (
       <section className="empty-card">
         <p className="eyebrow">{copy.resultPreview}</p>
@@ -33,19 +34,27 @@ export function ResultContent({ idea }: ResultContentProps) {
     );
   }
 
+  const ideaId = idea.id;
+  const ideaTitle = localizedIdea.title;
+
   function beginAdventure() {
-    if (starting || !localizedIdea) return;
+    if (starting) return;
     setStarting(true);
-    const dateId = localizedIdea.id;
-    const adventure = startAdventure(dateId);
-    router.push(`/adventure?id=${dateId}&adventureId=${adventure.id}`);
+    const adventure = startAdventure({
+      identity: { source: "builtin", id: ideaId },
+      title: ideaTitle,
+    });
+    router.push(`/adventure?id=${ideaId}&adventureId=${adventure.id}`);
   }
 
   return (
     <>
       <section className="result-hero">
         <div className="result-number">{copy.resultPick}</div>
-        <p className="eyebrow">{localizedIdea.categories[0] ?? ""}</p>
+        <div className="activity-meta">
+          <span className="eyebrow">{localizedIdea.categories[0] ?? ""}</span>
+          <TriedBadge identity={{ source: "builtin", id: ideaId }} />
+        </div>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
         <div className="detail-grid">

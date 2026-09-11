@@ -1,5 +1,8 @@
 import type {
+  ActivityIdentity,
+  ActivitySnapshot,
   AdventureSession,
+  DiscoveryRound,
   Memory,
   MemoryRating,
   RatingScore,
@@ -10,12 +13,17 @@ const STORAGE_KEY = "mydate.save.v3";
 const LEGACY_V1_STORAGE_KEY = "mydate.save.v2";
 const LEGACY_PRE_XP_STORAGE_KEY = "mydate.save.v1";
 
+function createEmptyDiscoveryRound(): DiscoveryRound {
+  return { completedActivityKeys: [] };
+}
+
 function createEmptySaveData(): SaveData {
   return {
     version: 3,
     savedDateIds: [],
     activeAdventures: [],
     memories: [],
+    discoveryRound: createEmptyDiscoveryRound(),
   };
 }
 
@@ -40,13 +48,34 @@ function isMemoryRating(value: unknown): value is MemoryRating {
   );
 }
 
+function isActivityIdentity(value: unknown): value is ActivityIdentity {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<ActivityIdentity>;
+
+  return (
+    (candidate.source === "builtin" || candidate.source === "custom") &&
+    typeof candidate.id === "string" &&
+    candidate.id.length > 0
+  );
+}
+
+function isActivitySnapshot(value: unknown): value is ActivitySnapshot {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<ActivitySnapshot>;
+
+  return (
+    isActivityIdentity(candidate.identity) &&
+    (candidate.title === undefined || typeof candidate.title === "string")
+  );
+}
+
 function isMemory(value: unknown): value is Memory {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<Memory>;
 
   return (
     typeof candidate.id === "string" &&
-    typeof candidate.dateIdeaId === "string" &&
+    isActivitySnapshot(candidate.activitySnapshot) &&
     typeof candidate.completedAt === "string" &&
     typeof candidate.memoryPromptCompleted === "boolean" &&
     (candidate.rating === undefined || isMemoryRating(candidate.rating))
@@ -59,9 +88,15 @@ function isAdventureSession(value: unknown): value is AdventureSession {
 
   return (
     typeof candidate.id === "string" &&
-    typeof candidate.dateIdeaId === "string" &&
+    isActivitySnapshot(candidate.activitySnapshot) &&
     typeof candidate.startedAt === "string"
   );
+}
+
+function isDiscoveryRound(value: unknown): value is DiscoveryRound {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<DiscoveryRound>;
+  return isStringArray(candidate.completedActivityKeys);
 }
 
 function isSaveData(value: unknown): value is SaveData {
@@ -74,7 +109,8 @@ function isSaveData(value: unknown): value is SaveData {
     Array.isArray(candidate.activeAdventures) &&
     candidate.activeAdventures.every(isAdventureSession) &&
     Array.isArray(candidate.memories) &&
-    candidate.memories.every(isMemory)
+    candidate.memories.every(isMemory) &&
+    isDiscoveryRound(candidate.discoveryRound)
   );
 }
 
@@ -95,6 +131,12 @@ function uniqueMemories(memories: Memory[]): Memory[] {
     seen.add(memory.id);
     return true;
   });
+}
+
+function legacyBuiltinSnapshot(dateIdeaId: string): ActivitySnapshot {
+  return {
+    identity: { source: "builtin", id: dateIdeaId },
+  };
 }
 
 function migrateLegacyV1(value: unknown): SaveData | undefined {
@@ -133,7 +175,7 @@ function migrateLegacyV1(value: unknown): SaveData | undefined {
 
     memories.push({
       id: adventure.id,
-      dateIdeaId: adventure.dateId,
+      activitySnapshot: legacyBuiltinSnapshot(adventure.dateId),
       completedAt: adventure.completedAt,
       memoryPromptCompleted: adventure.memoryPromptStatus === "completed",
       rating,
@@ -145,6 +187,7 @@ function migrateLegacyV1(value: unknown): SaveData | undefined {
     savedDateIds: isStringArray(legacy.savedDateIds) ? legacy.savedDateIds : [],
     activeAdventures: [],
     memories: uniqueMemories(memories),
+    discoveryRound: createEmptyDiscoveryRound(),
   };
 }
 
@@ -170,7 +213,7 @@ function migrateLegacyCompletedDates(value: unknown): SaveData | undefined {
 
     memories.push({
       id: `legacy:${completed.dateId}:${completed.completedAt}`,
-      dateIdeaId: completed.dateId,
+      activitySnapshot: legacyBuiltinSnapshot(completed.dateId),
       completedAt: completed.completedAt,
       memoryPromptCompleted: false,
     });
@@ -181,6 +224,7 @@ function migrateLegacyCompletedDates(value: unknown): SaveData | undefined {
     savedDateIds: isStringArray(legacy.savedDateIds) ? legacy.savedDateIds : [],
     activeAdventures: [],
     memories: uniqueMemories(memories),
+    discoveryRound: createEmptyDiscoveryRound(),
   };
 }
 
@@ -222,6 +266,14 @@ export function clearSaveData(): void {
   window.localStorage.removeItem(LEGACY_PRE_XP_STORAGE_KEY);
 }
 
+export function getActivityKey(identity: ActivityIdentity): string {
+  return `${identity.source}:${identity.id}`;
+}
+
+export function sameActivityIdentity(a: ActivityIdentity, b: ActivityIdentity): boolean {
+  return a.source === b.source && a.id === b.id;
+}
+
 function updateMemory(
   memoryId: string,
   updater: (memory: Memory) => Memory,
@@ -236,11 +288,11 @@ function updateMemory(
   return updated;
 }
 
-export function startAdventure(dateIdeaId: string): AdventureSession {
+export function startAdventure(activitySnapshot: ActivitySnapshot): AdventureSession {
   const data = loadSaveData();
   const adventure: AdventureSession = {
     id: crypto.randomUUID(),
-    dateIdeaId,
+    activitySnapshot,
     startedAt: new Date().toISOString(),
   };
 
@@ -250,13 +302,21 @@ export function startAdventure(dateIdeaId: string): AdventureSession {
 }
 
 /**
- * Completing an Adventure creates exactly one Memory.
- * Repeated completion calls for the same adventure id return the existing Memory.
+ * Completing an Adventure creates exactly one Memory and excludes that activity
+ * from random discovery for the current round exactly once.
  */
 export function completeAdventure(adventureId: string): Memory | undefined {
   const data = loadSaveData();
   const existing = data.memories.find((memory) => memory.id === adventureId);
-  if (existing) return existing;
+
+  if (existing) {
+    const key = getActivityKey(existing.activitySnapshot.identity);
+    if (!data.discoveryRound.completedActivityKeys.includes(key)) {
+      data.discoveryRound.completedActivityKeys.push(key);
+      saveSaveData(data);
+    }
+    return existing;
+  }
 
   const index = data.activeAdventures.findIndex((adventure) => adventure.id === adventureId);
   if (index === -1) return undefined;
@@ -264,13 +324,17 @@ export function completeAdventure(adventureId: string): Memory | undefined {
   const adventure = data.activeAdventures[index];
   const memory: Memory = {
     id: adventure.id,
-    dateIdeaId: adventure.dateIdeaId,
+    activitySnapshot: adventure.activitySnapshot,
     completedAt: new Date().toISOString(),
     memoryPromptCompleted: false,
   };
 
+  const key = getActivityKey(adventure.activitySnapshot.identity);
   data.activeAdventures.splice(index, 1);
   data.memories.push(memory);
+  if (!data.discoveryRound.completedActivityKeys.includes(key)) {
+    data.discoveryRound.completedActivityKeys.push(key);
+  }
   saveSaveData(data);
   return memory;
 }
@@ -299,4 +363,39 @@ export function getMemories(data: SaveData = loadSaveData()): Memory[] {
 
 export function getMemoryCount(data: SaveData = loadSaveData()): number {
   return data.memories.length;
+}
+
+/** Historical state. Never reset by a new discovery round. */
+export function hasTriedActivity(
+  identity: ActivityIdentity,
+  data: SaveData = loadSaveData(),
+): boolean {
+  return data.memories.some((memory) =>
+    sameActivityIdentity(memory.activitySnapshot.identity, identity),
+  );
+}
+
+/** Useful for future "Tried N times" UI without changing persisted state. */
+export function getTriedCount(
+  identity: ActivityIdentity,
+  data: SaveData = loadSaveData(),
+): number {
+  return data.memories.filter((memory) =>
+    sameActivityIdentity(memory.activitySnapshot.identity, identity),
+  ).length;
+}
+
+/** Current-cycle state used by random discovery only. */
+export function isActivityCompletedInCurrentRound(
+  identity: ActivityIdentity,
+  data: SaveData = loadSaveData(),
+): boolean {
+  return data.discoveryRound.completedActivityKeys.includes(getActivityKey(identity));
+}
+
+export function startNewDiscoveryRound(): SaveData {
+  const data = loadSaveData();
+  data.discoveryRound = createEmptyDiscoveryRound();
+  saveSaveData(data);
+  return data;
 }

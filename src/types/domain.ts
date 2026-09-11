@@ -13,7 +13,7 @@ export type DateCost = "free" | "low" | "medium" | "high";
 export type DateDuration = "short" | "medium" | "long";
 
 /**
- * V2 ships with Chinese, English, and Japanese.
+ * V2/V3 ships with Chinese, English, and Japanese.
  * Additional locale keys may be added later without changing DateIdea.
  */
 export interface LocalizedText extends Record<string, string> {
@@ -25,7 +25,7 @@ export interface LocalizedText extends Record<string, string> {
 /**
  * Canonical date activity content contract.
  * photoPrompt remains the localized Memory Prompt shown after completion.
- * V2 does not upload or store user photos.
+ * The app does not upload or store user photos.
  */
 export interface DateIdea {
   id: string;
@@ -40,12 +40,32 @@ export interface DateIdea {
   tags: string[];
 }
 
+export type ActivitySource = "builtin" | "custom";
+
+/**
+ * Stable identity used for matching activity history.
+ * Titles are presentation and must never be used as identity.
+ */
+export interface ActivityIdentity {
+  source: ActivitySource;
+  id: string;
+}
+
+/**
+ * Immutable presentation snapshot captured for an Adventure / Memory.
+ * identity is authoritative for matching; title is only a historical fallback.
+ */
+export interface ActivitySnapshot {
+  identity: ActivityIdentity;
+  title?: string;
+}
+
 export type RatingScore = 1 | 2 | 3 | 4 | 5;
 
 /**
  * Private user-owned experience rating.
  * overall preserves the V1 single-score rating without inventing new data.
- * Optional dimensions may be used by V2 UI without making them required.
+ * Optional dimensions may be used by later UI without making them required.
  */
 export interface MemoryRating {
   overall?: RatingScore;
@@ -55,12 +75,12 @@ export interface MemoryRating {
 }
 
 /**
- * Primary completed-experience domain object in V2.
+ * Primary completed-experience domain object.
  * One completed Adventure creates exactly one Memory.
  */
 export interface Memory {
   id: string;
-  dateIdeaId: string;
+  activitySnapshot: ActivitySnapshot;
   completedAt: string;
   memoryPromptCompleted: boolean;
   rating?: MemoryRating;
@@ -72,8 +92,16 @@ export interface Memory {
  */
 export interface AdventureSession {
   id: string;
-  dateIdeaId: string;
+  activitySnapshot: ActivitySnapshot;
   startedAt: string;
+}
+
+/**
+ * Resettable discovery-cycle state.
+ * Historical Tried state is never stored here; it is derived from Memories.
+ */
+export interface DiscoveryRound {
+  completedActivityKeys: string[];
 }
 
 export interface SaveData {
@@ -81,4 +109,5 @@ export interface SaveData {
   savedDateIds: string[];
   activeAdventures: AdventureSession[];
   memories: Memory[];
+  discoveryRound: DiscoveryRound;
 }
