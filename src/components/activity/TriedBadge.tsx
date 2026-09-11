@@ -19,10 +19,12 @@ const copy = {
 export function TriedBadge({ identity }: TriedBadgeProps) {
   const locale = useLocale();
   const [tried, setTried] = useState(false);
+  const source = identity.source;
+  const id = identity.id;
 
   useEffect(() => {
-    setTried(hasTriedActivity(identity));
-  }, [identity.source, identity.id]);
+    setTried(hasTriedActivity({ source, id }));
+  }, [source, id]);
 
   if (!tried) return null;
   return <span className={styles.badge}>{copy[locale]}</span>;
