@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ActivityIdentity, DateIdea } from "../../types/domain";
 import {
   isActivityCompletedInCurrentRound,
@@ -46,13 +46,12 @@ export function RandomResultContent({ ideas }: RandomResultContentProps) {
   const text = copy[locale];
   const [idea, setIdea] = useState<DateIdea | undefined>(undefined);
   const [ready, setReady] = useState(false);
+  const hasIdeas = ideas.length > 0;
 
   useEffect(() => {
     setIdea(pickEligibleIdea(ideas));
     setReady(true);
   }, [ideas]);
-
-  const hasIdeas = useMemo(() => ideas.length > 0, [ideas.length]);
 
   if (!ready) return null;
   if (idea) return <ResultContent idea={idea} />;
