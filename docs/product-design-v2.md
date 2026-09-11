@@ -1,4 +1,4 @@
-# myDate V2 Product Design — MD-004 Memory First
+# myDate V2/V3 Product Design — Memory First
 
 ## Product Statement
 
@@ -10,11 +10,11 @@ The user is the permanent subject of myDate. Dating partners and relationships m
 
 **Activity First. Memory Second.**
 
-V2 removes relationship progression. The product no longer evaluates whether a relationship is growing, succeeding, failing, or moving toward a shared destination.
+The product does not evaluate whether a relationship is growing, succeeding, failing, or moving toward a shared destination.
 
 A completed Adventure becomes a user-owned Memory.
 
-## Canonical V2 Flow
+## Canonical Flow
 
 ```text
 Discover Date Idea
@@ -29,7 +29,51 @@ Discover Date Idea
 → Memory saved
 ```
 
-The Memory is actually persisted at Adventure Complete so that later optional steps cannot block or erase the completed experience.
+The Memory is persisted at Adventure Complete so later optional steps cannot block or erase the completed experience.
+
+## Historical Tried
+
+Activities completed at least once show a subtle historical indicator.
+
+Recommended labels:
+
+- English: `Tried`
+- Chinese: `做过`
+- Japanese: `体験済み`
+
+Do not use `Completed`, because activities can be repeated.
+
+Historical Tried and current discovery-round completion are different:
+
+```text
+Historical Tried
+→ derived from Memories
+→ never reset by a new round
+
+Current-round completion
+→ used only by random discovery
+→ reset by Start a new round
+```
+
+Example:
+
+```text
+Complete Record Store Exchange
+→ excluded from current random round
+→ card shows Tried
+
+Start a new round
+→ eligible for random again
+→ Tried remains visible
+```
+
+Tried should appear consistently where practical in Discover cards, filtered lists, My Ideas, and activity detail, but must stay visually secondary to discovery content.
+
+Historical matching uses stable activity identity, never title. This is especially important for user-created activities that may be renamed.
+
+Deleting a custom activity does not delete its existing Memories or historical record.
+
+Repeated experiences create repeated Memories. V3 does not require repetition counts in the UI, but the data model must not prevent future `Tried 2 times` / `Tried 3 times` presentation.
 
 ## Memory Prompt
 
@@ -37,13 +81,7 @@ Every DateIdea keeps one localized Memory Prompt through the existing `photoProm
 
 The prompt suggests one meaningful photo the user may take with their own phone and keep in their normal gallery.
 
-V2 does not:
-
-- upload photos
-- store photos
-- request photo URLs
-- verify whether a photo was taken
-- use image cloud storage
+The app does not upload, store, request URLs for, or verify photos.
 
 `I got it` records only:
 
@@ -51,79 +89,44 @@ V2 does not:
 memoryPromptCompleted = true
 ```
 
-`Skip` leaves it false.
-
-Both paths keep the Memory.
+`Skip` leaves it false. Both paths keep the Memory.
 
 ## Experience Rating
 
 Rating is private and belongs to the completed experience.
 
-The V2 domain supports:
-
-- `overall`
-- `fun`
-- `comfort`
-- `doAgain`
-
-Each score, when collected, is 1–5.
-
-The current MD-004 scope does not require every dimension to be collected. Legacy V1 single ratings migrate to `overall` only.
+The domain supports `overall`, `fun`, `comfort`, and `doAgain`, each 1–5 when collected. Legacy V1 single ratings migrate to `overall` only.
 
 ## Memory Reward
 
-V1 gold-star feedback is preserved but its meaning changes.
-
-Old:
-
-```text
-stars → Egg → XP
-```
-
-New:
+The gold-star feedback is preserved but its meaning changes:
 
 ```text
 stars → Memories icon / Memory counter → +1 Memory
 ```
 
-This is presentation-only. It must not determine whether a Memory exists.
+This is presentation-only. It never determines whether a Memory exists.
 
-The visual language remains:
-
-- pale yellow
-- champagne gold
-- small particles
-- short duration
-- warm
-- soft
-- mobile-friendly
-- reduced-motion friendly
+Visual language remains pale yellow / champagne gold, short, warm, soft, mobile-friendly, and reduced-motion friendly.
 
 ## Removed Concepts
 
-V2 removes:
+Remove:
 
 - Egg
-- Egg customization
-- Egg page
-- Egg progress
+- Egg customization/page/progress
 - hatch system
-- XP
-- XP settlement
-- XP delta badge
+- XP / XP settlement / XP delta
 - relationship progression
 - love progression
 - pet naming
-- hatchGoal
-- eggColor
-- isHatched
-- petName
+- hatchGoal / eggColor / isHatched / petName
 
 No renamed substitute for relationship progress should be added.
 
 ## Preserved Concepts
 
-V2 keeps:
+Keep:
 
 - date discovery
 - Date Cards
@@ -136,29 +139,32 @@ V2 keeps:
 - Memories
 - localStorage
 - localization
-- existing gold-star reward style
+- gold-star reward style
+- repeatable activities
 
-## Not V2
+## Not Current Scope
 
 - backend
 - accounts
 - cloud sync
 - Solo mode
 - partner profiles
-- relationship timelines
-- relationship scoring
+- relationship timelines/scoring
 - photo upload/storage
 - social feed
 - replacement XP/currency system
+- mandatory repetition-count UI
 
-## V2 Success Criteria
+## Success Criteria
 
 Internal testing should answer:
 
-- Do users understand that completed dates become their own Memories?
-- Does Skip still feel safe because the Memory is preserved?
-- Does the Memories surface feel personally meaningful rather than couple-dependent?
-- Does the `+1 Memory` reward feel satisfying without turning Memories into a score chase?
+- Do completed experiences feel owned by the user?
+- Does Skip feel safe because Memory is preserved?
+- Does Tried help users understand personal history without making activities feel permanently finished?
+- Does starting a new round clearly restore eligibility without erasing history?
+- Do custom activity edits/deletion preserve historical continuity?
+- Does +1 Memory feel satisfying without becoming a score chase?
 - Does migration preserve existing completed experiences without exposing obsolete Egg/XP concepts?
 
 ## Development Rule
