@@ -3,8 +3,9 @@ import type { DateIdea } from "../types/domain";
 const t = (zh: string, en: string, ja: string) => ({ zh, en, ja });
 
 /**
- * Canonical V1 date idea source.
- * All cards follow the Architect-approved localized DateIdea contract.
+ * Canonical V2 date idea source.
+ * DateIdea schema remains Architect-owned; content uses categories for broad discovery
+ * and tags for lightweight experience-level filtering.
  */
 export const dateIdeas: DateIdea[] = [
   {
@@ -13,7 +14,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("找一条风景舒服的路线，不设终点，只一起走到想停下来的时候。", "Pick a scenic route and walk without a destination. Stop whenever the moment feels right.", "景色のいい道を、目的地を決めずに歩く。止まりたくなった場所が今日のゴール。"),
     littleMission: t("轮流指出一个对方可能没注意到的景色。", "Take turns pointing out one detail the other person might have missed.", "相手が見逃していそうな景色を一つずつ教える。"),
     photoPrompt: t("不要拍太阳。拍一样被夕阳染上颜色的东西。", "Don't photograph the sun. Photograph something touched by the sunset.", "太陽そのものではなく、夕日に染まった何かを撮る。"),
-    categories: ["romantic", "outdoor", "relaxing"], cost: "free", duration: "medium", indoor: false, tags: ["sunset", "walk", "scenic"],
+    categories: ["romantic", "outdoor", "relaxing"], cost: "free", duration: "medium", indoor: false, tags: ["quiet", "outdoor", "sunset", "walk", "conversation", "spontaneous"],
   },
   {
     id: "one-canvas",
@@ -21,7 +22,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("不要各画各的。共享一张画布，轮流加入颜色、形状和只有你们懂的东西。", "Share one canvas and take turns adding colors, shapes, and little things only the two of you understand.", "別々ではなく、一枚のキャンバスを共有。色や形、二人にしかわからないものを自由に足していく。"),
     littleMission: t("各自偷偷加入一个代表对方的小细节。", "Secretly add one tiny detail inspired by the other person.", "相手をイメージした小さなモチーフを一つこっそり加える。"),
     photoPrompt: t("不要拍整幅画。只拍一个以后还想记得的小细节。", "Don't photograph the whole artwork. Photograph one small detail you want to remember.", "作品全体ではなく、あとで思い出したい小さな部分を一つ撮る。"),
-    categories: ["creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["art", "collaboration", "playful"],
+    categories: ["creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["art", "craft", "collaboration", "playful", "low-social"],
   },
   {
     id: "dance-night",
@@ -29,7 +30,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("找一家音乐合口味的舞池、club 或 dance bar，只跟着音乐一起跳，不需要玩任何社交游戏。", "Find a dance floor, club, or dance bar with music you both like and simply move with it—no social games required.", "二人とも好きな音楽が流れるダンスフロアやクラブ、バーへ。余計なゲームはせず、ただ一緒に踊る。"),
     littleMission: t("选出一首以后听到就会想起今晚的歌。", "Choose one song to remember tonight by.", "今日を思い出すための一曲を決める。"),
     photoPrompt: t("拍下今晚最像“这首歌”的一个画面，不一定要有人。", "Photograph one scene that feels most like tonight's song. It does not need to include anyone.", "今夜の曲をいちばん思わせる景色を一枚撮る。人が写っていなくてもいい。"),
-    categories: ["adventure", "indoor", "romantic"], cost: "medium", duration: "long", indoor: true, tags: ["dance", "music", "night", "lively"],
+    categories: ["adventure", "indoor", "romantic"], cost: "medium", duration: "long", indoor: true, tags: ["music", "dance", "lively", "active", "night", "public"],
   },
   {
     id: "convenience-store-picnic",
@@ -37,7 +38,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("各自挑一点零食和饮料，再找一个舒服的公园、河边或长椅坐下来。", "Pick a few snacks and drinks, then find a park, riverside spot, or quiet bench to share them.", "お菓子と飲み物を少し買って、公園や川辺、気持ちのいいベンチへ。"),
     littleMission: t("不问对方，替对方挑一样你觉得会喜欢的东西。", "Choose one thing you think the other person will like—without asking.", "聞かずに、相手が好きそうなものを一つ選ぶ。"),
     photoPrompt: t("拍下今天看到的、你最喜欢的一种绿色。", "Photograph your favorite shade of green you saw today.", "今日見つけた中で、いちばん好きな緑色を撮る。"),
-    categories: ["food", "outdoor", "relaxing"], cost: "low", duration: "short", indoor: false, tags: ["picnic", "casual", "spontaneous"],
+    categories: ["food", "outdoor", "relaxing"], cost: "low", duration: "short", indoor: false, tags: ["food", "cozy", "outdoor", "spontaneous", "low-social"],
   },
   {
     id: "five-beautiful-things",
@@ -45,7 +46,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("没有目的地地逛一会儿，一起找到五样值得停下来看的东西。", "Wander without a destination and find five things worth stopping to notice.", "目的地を決めずに歩きながら、思わず立ち止まりたくなるものを5つ探す。"),
     littleMission: t("五样东西至少来自三个不同类别，比如光、声音、建筑或小动物。", "Make your five finds span at least three kinds of things—light, sound, buildings, animals, anything.", "光、音、建物、生き物など、少なくとも3種類から5つ見つける。"),
     photoPrompt: t("只拍五样东西里最不起眼、却最舍不得忘记的那一个。", "Photograph the least obvious of your five finds—the one you would miss most if you forgot it.", "5つの中でいちばん目立たないのに、忘れたくないものを一つ撮る。"),
-    categories: ["adventure", "outdoor", "creative"], cost: "free", duration: "medium", indoor: false, tags: ["photo", "exploration", "observation"],
+    categories: ["adventure", "outdoor", "creative"], cost: "free", duration: "medium", indoor: false, tags: ["exploration", "photo", "observation", "outdoor", "spontaneous"],
   },
   {
     id: "arcade-date",
@@ -53,7 +54,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("赛车、音游、抓娃娃，看到什么好玩就玩什么。输赢都不用太认真。", "Race, play rhythm games, try a claw machine—just follow whatever looks fun.", "レース、音ゲー、クレーンゲーム。気になったものを自由に遊んでみる。"),
     littleMission: t("带走一个能代表今晚的小战利品。", "Leave with one tiny souvenir from tonight.", "今日を思い出せる小さな戦利品を一つ持ち帰る。"),
     photoPrompt: t("拍一样最像“今天的战利品”的东西。", "Photograph something that feels like today's trophy.", "今日の『戦利品』みたいに感じるものを一つ撮る。"),
-    categories: ["indoor", "adventure"], cost: "low", duration: "medium", indoor: true, tags: ["games", "playful", "casual"],
+    categories: ["indoor", "adventure"], cost: "low", duration: "medium", indoor: true, tags: ["games", "playful", "lively", "active", "public"],
   },
   {
     id: "cook-something-new",
@@ -61,7 +62,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("选一道你们都不会的菜，一边查步骤一边合作。做成功不是重点。", "Choose a recipe neither of you has made before and figure it out together. Success is optional.", "二人とも作ったことのない料理を選んで、一緒に試してみる。成功しなくても大丈夫。"),
     littleMission: t("给最后做出来的东西取一个夸张的餐厅菜名。", "Give the finished dish an unnecessarily fancy restaurant name.", "完成した料理に、ちょっと大げさなレストラン風の名前をつける。"),
     photoPrompt: t("不要拍成品全貌。拍一个能看出“我们真的一起做过”的细节。", "Don't photograph the finished dish as a whole. Photograph one detail that proves you really made it together.", "完成品全体ではなく、『一緒に作った』とわかる小さな跡を撮る。"),
-    categories: ["food", "creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["cooking", "collaboration", "home"],
+    categories: ["food", "creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["food", "collaboration", "creative", "home", "low-social"],
   },
   {
     id: "quiet-reading-date",
@@ -69,7 +70,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("找一家舒服的咖啡馆，各自看自己的书。不需要一直聊天，也是在约会。", "Find a cozy café and read your own books side by side. You do not have to keep talking to be together.", "落ち着くカフェで、それぞれ好きな本を読む。ずっと話さなくても、一緒にいる時間になる。"),
     littleMission: t("离开前分享一句今天读到的、你喜欢的话或想法。", "Before leaving, share one sentence or idea you liked.", "帰る前に、今日気に入った一文かアイデアを一つ共有する。"),
     photoPrompt: t("拍下对方读得最久的那一页、书封或书脊。", "Photograph the page, cover, or spine the other person spent the longest with.", "相手がいちばん長く見ていたページ、表紙、背表紙のどれかを撮る。"),
-    categories: ["relaxing", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["quiet", "reading", "cafe"],
+    categories: ["relaxing", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["quiet", "cozy", "reading", "low-social", "conversation"],
   },
   {
     id: "pottery-for-two",
@@ -77,7 +78,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("预约一次陶艺体验，一起做点实用、可爱，或者歪歪扭扭也没关系的东西。", "Book a pottery session and make something useful, cute, or slightly crooked together.", "陶芸体験を予約して、実用的でも、かわいくても、少しくらい歪んでいてもいいものを一緒に作る。"),
     littleMission: t("在作品上加一个只有你们知道的小细节。", "Add one tiny detail that only the two of you understand.", "二人にしかわからない小さな要素を一つ入れる。"),
     photoPrompt: t("拍一处手留下的痕迹：指纹、压痕、歪掉的边都可以。", "Photograph one trace left by your hands—a fingerprint, dent, or imperfect edge.", "指紋、へこみ、少し歪んだ縁など、手の跡が残った部分を撮る。"),
-    categories: ["creative", "indoor"], cost: "medium", duration: "medium", indoor: true, tags: ["pottery", "workshop", "hands-on"],
+    categories: ["creative", "indoor"], cost: "medium", duration: "medium", indoor: true, tags: ["craft", "collaboration", "hands-on", "reservation", "low-social"],
   },
   {
     id: "live-music-night",
@@ -85,7 +86,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("挑一场小型演出或音乐会，让音乐替你们填满一会儿沉默。", "Pick a small live show or concert and let the music carry the conversation for a while.", "小さなライブやコンサートを選んで、しばらく音楽に会話を任せてみる。"),
     littleMission: t("散场后各自说出最喜欢的一首或一个瞬间。", "After the show, each name one favorite song or moment.", "終演後、それぞれ一番好きだった曲か瞬間を一つ話す。"),
     photoPrompt: t("拍一张能证明“今晚真的发生过”的小东西：票、手环、节目单或地上的彩纸。", "Photograph one small thing that proves tonight really happened—a ticket, wristband, program, or piece of confetti.", "チケット、リストバンド、プログラム、紙吹雪など、『今夜が本当にあった』と残せるものを撮る。"),
-    categories: ["romantic", "indoor"], cost: "medium", duration: "long", indoor: true, tags: ["music", "live", "night"],
+    categories: ["romantic", "indoor"], cost: "medium", duration: "long", indoor: true, tags: ["music", "culture", "night", "public", "reservation"],
   },
   {
     id: "aquarium-walk",
@@ -93,7 +94,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("不赶路线地逛水族馆，哪只生物吸引你们，就在那里多停一会儿。", "Walk slowly through an aquarium and spend too long watching whichever creature catches your eye.", "急がずに水族館を回って、気になった生き物の前では好きなだけ立ち止まる。"),
     littleMission: t("各自选出今天最想带回家的海洋生物。", "Each choose the sea creature you would most want to take home.", "今日いちばん家に連れて帰りたい生き物を一つずつ選ぶ。"),
     photoPrompt: t("拍下水族箱的光落在某个物体上的样子，而不是只拍鱼。", "Photograph aquarium light falling on something, rather than just photographing a fish.", "魚だけではなく、水槽の光が何かに落ちている瞬間を撮る。"),
-    categories: ["relaxing", "indoor"], cost: "medium", duration: "medium", indoor: true, tags: ["aquarium", "animals", "quiet"],
+    categories: ["relaxing", "indoor"], cost: "medium", duration: "medium", indoor: true, tags: ["animals", "quiet", "cozy", "public", "observation"],
   },
   {
     id: "breakfast-date",
@@ -101,7 +102,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("比平时早一点见面，在一天还没真正开始前一起吃顿早餐。", "Meet earlier than usual and share breakfast while the day still feels new.", "いつもより少し早く会って、一日が本格的に始まる前に朝ごはんを一緒に食べる。"),
     littleMission: t("各自选一样平时不会点的东西。", "Each order one thing you would not usually choose.", "いつもなら選ばないものを一つずつ頼む。"),
     photoPrompt: t("拍一张只有早晨才有的东西：第一杯咖啡的热气、窗边的光，或还没醒透的街。", "Photograph something that only belongs to morning—the steam from the first coffee, window light, or a half-awake street.", "最初のコーヒーの湯気、窓の光、まだ眠そうな街など、朝にしかないものを撮る。"),
-    categories: ["food", "relaxing"], cost: "low", duration: "short", indoor: true, tags: ["morning", "breakfast", "casual"],
+    categories: ["food", "relaxing"], cost: "low", duration: "short", indoor: true, tags: ["food", "morning", "quiet", "cozy", "public"],
   },
   {
     id: "bike-and-breeze",
@@ -109,7 +110,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("骑车去一个视野开阔的地方，不追速度，找到喜欢的景色就停下来。", "Ride somewhere with an open view, forget about speed, and stop when you find a place you like.", "自転車で景色の開けた場所へ。速さは気にせず、いい場所を見つけたら止まる。"),
     littleMission: t("途中一起选一个临时停靠点。", "Pick one unplanned stop together along the way.", "途中で予定になかった寄り道を一つ決める。"),
     photoPrompt: t("从车把或篮子的高度，拍下今天最想停下来的那个地方。", "From handlebar or basket height, photograph the place that made you most want to stop.", "ハンドルやかごの高さから、今日いちばん止まりたくなった場所を撮る。"),
-    categories: ["outdoor", "adventure"], cost: "low", duration: "medium", indoor: false, tags: ["cycling", "active", "scenic"],
+    categories: ["outdoor", "adventure"], cost: "low", duration: "medium", indoor: false, tags: ["active", "outdoor", "exploration", "spontaneous", "scenic"],
   },
   {
     id: "dessert-split",
@@ -117,7 +118,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("挑两样你们都没吃过的甜点，不点惯常款，一人一半交换着吃。", "Choose two desserts neither of you has tried and share both instead of ordering your usual favorites.", "二人とも食べたことのないデザートを二つ選んで、いつもの定番ではなく半分ずつシェアする。"),
     littleMission: t("最后一起选出今天的冠军。", "Pick one winner together at the end.", "最後に今日の一位を一緒に決める。"),
     photoPrompt: t("不要拍刚端上来的甜点。等吃到一半，再拍最能看出“我们真的喜欢它”的样子。", "Don't photograph the dessert when it first arrives. Wait until halfway through and capture the evidence that you actually liked it.", "届いた瞬間ではなく、半分食べたあとに『本当に気に入った』とわかる状態を撮る。"),
-    categories: ["food", "indoor"], cost: "low", duration: "short", indoor: true, tags: ["dessert", "taste", "casual"],
+    categories: ["food", "indoor"], cost: "low", duration: "short", indoor: true, tags: ["food", "playful", "cozy", "public", "spontaneous"],
   },
   {
     id: "market-wander",
@@ -125,7 +126,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("不列购物清单，闻到香的、看到有趣的、听到热闹的就过去看看。", "Browse a market or street fair with no shopping list and follow whatever smells, looks, or sounds interesting.", "買い物リストは作らず、いい匂い、面白いもの、楽しそうな音のする方へ寄ってみる。"),
     littleMission: t("各自发现一样对方可能会错过的东西。", "Each point out one thing the other person might have missed.", "相手が見逃しそうなものを一つずつ見つける。"),
     photoPrompt: t("拍一个摊位上最奇怪、最可爱或最让你们停下来的小东西。", "Photograph the strangest, cutest, or most stop-you-in-your-tracks item at a stall.", "屋台や店先で、いちばん不思議・かわいい・足を止めたくなった小さなものを撮る。"),
-    categories: ["adventure", "outdoor", "food"], cost: "low", duration: "medium", indoor: false, tags: ["market", "exploration", "street"],
+    categories: ["adventure", "outdoor", "food"], cost: "low", duration: "medium", indoor: false, tags: ["exploration", "food", "lively", "public", "spontaneous"],
   },
   {
     id: "museum-pick",
@@ -133,7 +134,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("去看展，各自挑一件“如果可以，最想放进自己房间”的作品。", "Visit a museum or gallery and each choose one piece you would happily take home if you could.", "美術館やギャラリーで、もし持ち帰れるなら自分の部屋に置きたい作品を一つずつ選ぶ。"),
     littleMission: t("用一句话说说为什么选它。", "Explain your choice in one sentence.", "その理由を一言で話す。"),
     photoPrompt: t("如果允许拍照，只拍那件作品里最吸引你的一个局部；如果不允许，就拍展览票或导览册上最想留住的细节。", "If photography is allowed, capture one detail from your chosen work. If not, photograph a detail from the ticket or guide instead.", "撮影可能なら選んだ作品の一部分を。不可ならチケットや案内冊子の残したい部分を撮る。"),
-    categories: ["creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["art", "culture", "conversation"],
+    categories: ["creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["art", "culture", "quiet", "conversation", "public"],
   },
   {
     id: "mini-road-trip",
@@ -141,7 +142,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("选一个当天能往返的地方，共同做一张歌单，把路上也算进约会里。", "Choose somewhere close enough for a day trip, make one playlist, and let the ride be part of the date.", "日帰りできる場所を選び、一つのプレイリストを作って、移動時間もデートの一部にする。"),
     littleMission: t("轮流各加三首歌进今天的歌单。", "Take turns adding three songs each to the drive playlist.", "交互に3曲ずつ今日のプレイリストへ追加する。"),
     photoPrompt: t("拍一个你们本来没打算停、却临时停下来的地方。", "Photograph one place you never planned to stop, but did anyway.", "立ち寄る予定はなかったのに、なぜか止まった場所を一つ撮る。"),
-    categories: ["adventure", "outdoor", "romantic"], cost: "medium", duration: "long", indoor: false, tags: ["drive", "day-trip", "music"],
+    categories: ["adventure", "outdoor", "romantic"], cost: "medium", duration: "long", indoor: false, tags: ["exploration", "music", "outdoor", "private", "day-trip"],
   },
   {
     id: "rainy-day-walk",
@@ -149,7 +150,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("带上伞走一小段熟悉的路，看看下雨以后平时的街道会变成什么样。", "Take umbrellas, pick a short route, and enjoy how familiar streets feel different in the rain.", "傘を持って短い道を歩き、いつもの街が雨でどう変わるか楽しむ。"),
     littleMission: t("找一个雨天才会出现的声音或倒影。", "Find one sound or reflection that only appears because it is raining.", "雨の日だからこそ見つかる音か反射を一つ探す。"),
     photoPrompt: t("拍一个只因为下雨才出现的倒影。", "Photograph a reflection that only exists because it is raining.", "雨だからこそ現れた反射を一つ撮る。"),
-    categories: ["romantic", "outdoor", "relaxing"], cost: "free", duration: "short", indoor: false, tags: ["rain", "walk", "cozy"],
+    categories: ["romantic", "outdoor", "relaxing"], cost: "free", duration: "short", indoor: false, tags: ["quiet", "cozy", "outdoor", "weather", "spontaneous"],
   },
   {
     id: "bowling-date",
@@ -157,7 +158,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("随便打几局，好球就庆祝，歪球也不用太认真。", "Play a few relaxed rounds, celebrate lucky shots, and let bad throws be part of the fun.", "気楽に数ゲーム。ラッキーな一投は喜んで、失敗もそのまま楽しむ。"),
     littleMission: t("给今天最离谱的一球取个名字。", "Give the most ridiculous throw of the day a name.", "今日いちばん変だった一投に名前をつける。"),
     photoPrompt: t("拍下最能代表今天比分以外的东西：鞋、球号、计分屏角落或一张乱七八糟的记分。", "Photograph something that represents the game better than the score—shoes, a ball number, or one chaotic corner of the scoreboard.", "スコア以外で今日を表すものを撮る。靴、ボール番号、スコア画面の一角など。"),
-    categories: ["indoor", "adventure"], cost: "low", duration: "medium", indoor: true, tags: ["bowling", "playful", "active"],
+    categories: ["indoor", "adventure"], cost: "low", duration: "medium", indoor: true, tags: ["games", "playful", "active", "public", "lively"],
   },
   {
     id: "grocery-surprise",
@@ -165,7 +166,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("一起买菜，每个人偷偷选一种食材，之后想办法把它放进同一道菜里。", "Go grocery shopping together and each pick one ingredient the other person has to use somehow.", "一緒に買い物をして、お互いに一つずつ食材を選び、どうにか同じ料理に使ってみる。"),
     littleMission: t("不能否决对方选的食材，只能想办法用掉。", "No vetoes—find a way to use both surprise ingredients.", "相手の食材は却下せず、必ず使い道を考える。"),
     photoPrompt: t("把两样随机食材放在一起拍一张，它们本来可能永远不会出现在同一张照片里。", "Photograph the two surprise ingredients together—two things that might never have appeared in the same photo otherwise.", "本来同じ写真に写らなかったかもしれない二つのサプライズ食材を並べて撮る。"),
-    categories: ["food", "creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["grocery", "cooking", "challenge"],
+    categories: ["food", "creative", "indoor"], cost: "low", duration: "medium", indoor: true, tags: ["food", "playful", "collaboration", "public", "spontaneous"],
   },
   {
     id: "flower-shop-stop",
@@ -173,7 +174,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("随便走进一家花店，各自挑一枝真的喜欢的花，不需要送给谁。", "Browse a flower shop and each choose one stem or small bloom you genuinely like.", "花屋をのぞいて、本当に好きだと思う花を一輪ずつ選ぶ。誰かに贈らなくてもいい。"),
     littleMission: t("告诉对方为什么你选了这一枝。", "Tell the other person why you picked that one.", "なぜその花を選んだか相手に話す。"),
     photoPrompt: t("不要拍整束花。只拍一片花瓣、叶脉或包装纸上你最喜欢的颜色。", "Don't photograph the whole bouquet. Capture one petal, leaf vein, or favorite color in the wrapping.", "花束全体ではなく、花びら一枚、葉脈、包装紙の好きな色などを撮る。"),
-    categories: ["romantic", "relaxing"], cost: "low", duration: "short", indoor: true, tags: ["flowers", "quiet", "casual"],
+    categories: ["romantic", "relaxing"], cost: "low", duration: "short", indoor: true, tags: ["quiet", "cozy", "nature", "public", "spontaneous"],
   },
   {
     id: "photo-booth-date",
@@ -181,7 +182,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("找一台拍照机器，不用研究完美姿势，随便拍一组属于今天的照片。", "Find a photo booth and take a set of pictures without overthinking poses or trying to look perfect.", "フォトブースを見つけて、完璧なポーズを考えずに今日の写真を一組撮る。"),
     littleMission: t("留下一张最不像“认真拍照”的照片。", "Keep one photo that feels the least posed.", "一番「決めていない」感じの写真を一枚残す。"),
     photoPrompt: t("拍一下打印出来的照片边角、贴纸或机器吐出照片的瞬间，而不是再拍一次人。", "Photograph the printed photo edge, sticker, or the moment the machine spits the strip out—instead of taking another picture of yourselves.", "もう一度人を撮るのではなく、プリントの端、シール、写真が出てくる瞬間を撮る。"),
-    categories: ["creative", "indoor"], cost: "low", duration: "short", indoor: true, tags: ["photo", "playful", "souvenir"],
+    categories: ["creative", "indoor"], cost: "low", duration: "short", indoor: true, tags: ["photo", "playful", "public", "spontaneous", "souvenir"],
   },
   {
     id: "board-game-picnic",
@@ -189,7 +190,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("带一个规则很简单的游戏和一点吃的，找个能慢慢坐着的户外地方。", "Bring one easy game outside with snacks and play somewhere you can stay as long as you like.", "簡単なゲームとおやつを持って、ゆっくり座れる屋外の場所で遊ぶ。"),
     littleMission: t("输的人负责选下一份零食。", "The loser chooses the next snack.", "負けた人が次のおやつを選ぶ。"),
     photoPrompt: t("在收游戏之前，拍下桌面最乱、最像“残局”的那一刻。", "Before packing up, photograph the messiest, most endgame-looking state of the board.", "片づける前に、いちばん『終盤らしい』散らかった盤面を撮る。"),
-    categories: ["outdoor", "food", "adventure"], cost: "low", duration: "medium", indoor: false, tags: ["picnic", "board-game", "playful"],
+    categories: ["outdoor", "food", "adventure"], cost: "low", duration: "medium", indoor: false, tags: ["games", "food", "playful", "outdoor", "low-social"],
   },
   {
     id: "karaoke-for-two",
@@ -197,7 +198,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("开个小包间，把真正喜欢的歌加进去，唱得好不好完全不重要。", "Book a small room, queue songs you actually love, and sing badly if that is what happens.", "小さな部屋を取って、本当に好きな曲を入れる。上手に歌えるかは気にしない。"),
     littleMission: t("各自点一首“没想到你会唱这个”的歌。", "Each choose one song the other person would not expect from you.", "相手が意外に思いそうな曲を一曲ずつ入れる。"),
     photoPrompt: t("拍下今晚最意外的一首歌出现在点歌屏上的那一刻。", "Photograph the most unexpected song of the night when it appears on the queue screen.", "今夜いちばん意外だった曲が予約画面に出た瞬間を撮る。"),
-    categories: ["indoor", "adventure"], cost: "low", duration: "medium", indoor: true, tags: ["karaoke", "music", "private"],
+    categories: ["indoor", "adventure"], cost: "low", duration: "medium", indoor: true, tags: ["music", "playful", "private", "low-social", "night"],
   },
   {
     id: "sunrise-date",
@@ -205,7 +206,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("偶尔早起一次，找一个视野好的地方，看天空慢慢亮起来。", "Wake up unusually early and watch the sky change somewhere with a clear view.", "たまには早起きして、見晴らしのいい場所で空が明るくなるのを見る。"),
     littleMission: t("太阳出来以后，各自说一个今天想做的小事。", "After sunrise, each name one small thing you want to do today.", "日が昇ったら、今日やりたい小さなことを一つずつ話す。"),
     photoPrompt: t("不要直接拍太阳。拍一样在天亮前后颜色发生变化的东西。", "Don't photograph the sun. Photograph something whose color changes as morning arrives.", "太陽そのものではなく、夜明けで色が変わったものを撮る。"),
-    categories: ["romantic", "outdoor"], cost: "free", duration: "medium", indoor: false, tags: ["sunrise", "morning", "scenic"],
+    categories: ["romantic", "outdoor"], cost: "free", duration: "medium", indoor: false, tags: ["morning", "quiet", "outdoor", "scenic", "reservation"],
   },
   {
     id: "dream-room-browsing",
@@ -213,7 +214,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("一起逛家具或家居店，各自指出如果是自己的理想房间会选什么。", "Walk through a furniture or home store and point out what you would choose for your own ideal spaces.", "家具やインテリアショップを歩きながら、自分の理想の部屋なら何を置くか話してみる。"),
     littleMission: t("各自选一件“绝对会放进自己房间”的东西。", "Each pick one thing you would definitely put in your own room.", "自分の部屋に絶対置きたいものを一つずつ選ぶ。"),
     photoPrompt: t("拍两样你们分别会放进理想房间、但风格完全不像的东西。", "Photograph two things you would each put in your ideal rooms even though they look nothing alike.", "それぞれ理想の部屋に置きたい、まったく雰囲気の違う二つのものを一緒に撮る。"),
-    categories: ["indoor", "creative"], cost: "free", duration: "medium", indoor: true, tags: ["interior", "browsing", "imagination"],
+    categories: ["indoor", "creative"], cost: "free", duration: "medium", indoor: true, tags: ["shopping", "conversation", "creative", "public", "low-social"],
   },
   {
     id: "pick-each-others-drink",
@@ -221,7 +222,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("去咖啡店或茶饮店，不问对方想喝什么，凭感觉替对方选一杯。", "At a café or tea shop, choose a drink for the other person based only on what you think they might enjoy.", "カフェやティーショップで、相手に聞かず「好きそう」と思う一杯を選ぶ。"),
     littleMission: t("喝第一口前先猜对方为什么这么选。", "Before the first sip, guess why the other person chose it for you.", "一口飲む前に、なぜそれを選んだのか予想してみる。"),
     photoPrompt: t("把两杯饮料并排拍下来，记住对方眼里的“你是什么味道”。", "Photograph the two drinks side by side—the flavors you each imagined for the other person.", "二つの飲み物を並べて、お互いが相手に選んだ『味』を残す。"),
-    categories: ["food", "indoor"], cost: "low", duration: "short", indoor: true, tags: ["drinks", "cafe", "playful"],
+    categories: ["food", "indoor"], cost: "low", duration: "short", indoor: true, tags: ["food", "playful", "cozy", "public", "spontaneous"],
   },
   {
     id: "short-hike",
@@ -229,7 +230,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("选一条难度低又有风景的路线，带好水，用还能聊天的速度慢慢走。", "Choose an easy route with a view, bring water, and keep the pace comfortable enough to talk.", "景色のいい簡単なコースを選び、水を持って、話せるくらいのペースで歩く。"),
     littleMission: t("到终点后各自找一个最喜欢的视角。", "At the end, each find your favorite view.", "ゴールで、それぞれ一番好きな景色を見つける。"),
     photoPrompt: t("拍一路上最像“我们走了这么远”的证据：沾灰的鞋、路标、水瓶或一块石头。", "Photograph one piece of evidence that says 'we walked this far'—dusty shoes, a trail sign, a water bottle, or a rock.", "汚れた靴、道標、水筒、石など、『ここまで歩いた』証拠になるものを撮る。"),
-    categories: ["outdoor", "adventure"], cost: "free", duration: "long", indoor: false, tags: ["hike", "nature", "active"],
+    categories: ["outdoor", "adventure"], cost: "free", duration: "long", indoor: false, tags: ["nature", "active", "outdoor", "quiet", "exploration"],
   },
   {
     id: "make-one-playlist",
@@ -237,7 +238,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("轮流往同一个歌单里加歌，做成属于今天、这次旅行或这个季节的声音。", "Take turns adding songs until you have one shared playlist for the day, trip, or season.", "交互に曲を追加して、今日や旅行、季節のための一つのプレイリストを作る。"),
     littleMission: t("最后一起给这张歌单取名字。", "Give the playlist a name together at the end.", "最後に二人でプレイリストの名前を決める。"),
     photoPrompt: t("拍一个现实里的东西，让它成为这张歌单的“封面”。", "Photograph one real-world object or scene to become the playlist's cover image in your memory.", "現実の中から、このプレイリストの『ジャケット』にしたいものを一つ撮る。"),
-    categories: ["creative", "relaxing", "indoor"], cost: "free", duration: "short", indoor: true, tags: ["music", "playlist", "quiet"],
+    categories: ["creative", "relaxing", "indoor"], cost: "free", duration: "short", indoor: true, tags: ["music", "quiet", "creative", "low-social", "home"],
   },
   {
     id: "night-view-stop",
@@ -245,7 +246,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("找一个安全的高处、桥边或开阔地方，待到你们真的注意到城市慢慢安静下来。", "Find a safe viewpoint, bridge, or open space and stay long enough to notice the city getting quieter.", "安全な展望台や橋、開けた場所で、街が少しずつ静かになるまで過ごす。"),
     littleMission: t("一人指出一个对方还没注意到的光或声音。", "Each point out one light or sound the other person has not noticed yet.", "相手がまだ気づいていない光か音を一つずつ教える。"),
     photoPrompt: t("不要拍整片夜景。拍一个如果你独自走过可能不会注意到的光。", "Don't photograph the whole skyline. Photograph one light you probably would not have noticed if you were alone.", "夜景全体ではなく、一人なら気づかなかったかもしれない光を一つ撮る。"),
-    categories: ["romantic", "outdoor", "relaxing"], cost: "free", duration: "medium", indoor: false, tags: ["night", "view", "quiet"],
+    categories: ["romantic", "outdoor", "relaxing"], cost: "free", duration: "medium", indoor: false, tags: ["night", "quiet", "outdoor", "conversation", "scenic"],
   },
   {
     id: "record-store-date",
@@ -253,7 +254,7 @@ export const dateIdeas: DateIdea[] = [
     description: t("各自挑一张“如果只能带走一张，我会选它”的唱片，再互相分享最喜欢的一首歌。", "Pick one record you would take home if you could only choose one, then share one favorite track with each other.", "「一枚だけ持ち帰るならこれ」というレコードを一枚ずつ選んで、お互いに好きな一曲を紹介する。"),
     littleMission: t("一起选一首歌当作今天的主题曲。", "Choose one song together as today's theme.", "今日のテーマソングを二人で一曲決める。"),
     photoPrompt: t("把两张本来可能永远不会出现在同一张照片里的唱片放在一起拍。", "Photograph two records together that probably would never have appeared in the same photo otherwise.", "本来同じ写真に写らなかったかもしれない二枚のレコードを並べて撮る。"),
-    categories: ["creative", "indoor", "relaxing"], cost: "free", duration: "medium", indoor: true, tags: ["records", "music", "sharing"],
+    categories: ["creative", "indoor", "relaxing"], cost: "free", duration: "medium", indoor: true, tags: ["music", "quiet", "culture", "public", "low-social"],
   },
   {
     id: "private-dance-night",
@@ -261,6 +262,70 @@ export const dateIdeas: DateIdea[] = [
     description: t("租一小时练舞室、KTV 包间或找个不被打扰的空间，放你们喜欢的歌，想怎么跳就怎么跳。", "Rent a studio, use a karaoke room, or find a private space, play songs you love, and dance without an audience.", "スタジオやカラオケの個室など、人目を気にしない場所で好きな曲を流し、自由に踊る。"),
     littleMission: t("每个人轮流放一首“我觉得你会喜欢”的歌。", "Take turns playing one song you think the other person will enjoy.", "「相手が好きそう」と思う曲を一曲ずつ交互に流す。"),
     photoPrompt: t("跳完以后，拍一个最能证明这里刚刚变成过舞池的小细节：乱掉的鞋、移开的椅子、音箱灯或掉在地上的外套。", "After dancing, photograph one small sign that this space briefly became a dance floor—moved shoes, a shifted chair, speaker lights, or a jacket on the floor.", "踊ったあと、この場所が一瞬ダンスフロアだった証拠を撮る。ずれた靴、動かした椅子、スピーカーの光、床の上着など。"),
-    categories: ["indoor", "romantic", "relaxing"], cost: "low", duration: "medium", indoor: true, tags: ["dance", "music", "private", "low-social"],
+    categories: ["indoor", "romantic", "relaxing"], cost: "low", duration: "medium", indoor: true, tags: ["music", "dance", "private", "low-social", "playful"],
+  },
+  {
+    id: "bookstore-exchange",
+    title: t("书店交换发现", "Bookstore Exchange", "本屋で発見を交換"),
+    description: t("在书店分开逛一会儿，再带着一两本“你可能会停下来看”的书回来交换发现。", "Browse separately for a while, then meet again with one or two books you think the other person might stop for.", "本屋で少し別々に見て回り、相手が立ち止まりそうな本を1〜2冊持って戻る。"),
+    littleMission: t("各自挑一本最不像对方平时会主动拿起的书。", "Each choose one book the other person would not normally pick up.", "相手が普段なら手に取らなそうな本を一冊ずつ選ぶ。"),
+    photoPrompt: t("拍下对方拿在手里最久的那本书。", "Photograph the book the other person spent the longest holding.", "相手がいちばん長く手にしていた本を撮る。"),
+    categories: ["indoor", "relaxing", "creative"], cost: "free", duration: "medium", indoor: true, tags: ["quiet", "books", "culture", "public", "low-social"],
+  },
+  {
+    id: "stargazing-night",
+    title: t("去看一晚星星", "Stargazing Night", "星を見に行く夜"),
+    description: t("找一个安全、光害少的地方，带点热饮或毯子，留一段时间只看天空。", "Find a safe place with less light pollution, bring a warm drink or blanket, and spend some time simply watching the sky.", "安全で光の少ない場所を探し、温かい飲み物やブランケットを持って、しばらく空だけを見る。"),
+    littleMission: t("各自给今晚最显眼的一颗星或一片云起个名字。", "Each give a name to the brightest star or most memorable cloud tonight.", "今夜いちばん印象に残った星や雲に、それぞれ名前をつける。"),
+    photoPrompt: t("不要强求拍到星星。拍下地面上最能说明“我们在这里看过天空”的东西。", "Don't force the stars into the photo. Photograph something on the ground that says you were here watching the sky.", "星を無理に写さず、『ここで空を見ていた』とわかる地上のものを撮る。"),
+    categories: ["outdoor", "romantic", "relaxing"], cost: "free", duration: "long", indoor: false, tags: ["night", "nature", "quiet", "outdoor", "reservation"],
+  },
+  {
+    id: "spa-reset",
+    title: t("一起去放松一下", "Spa Reset", "一緒にスパでリセット"),
+    description: t("预约双人可用的 Spa、温泉或汗蒸空间，把这次约会留给安静休息，不安排额外任务。", "Book a spa, hot spring, or sauna space that works for two and let the date be about resting without adding more plans.", "二人で利用できるスパ、温泉、サウナを予約して、予定を詰め込まず静かに休む。"),
+    littleMission: t("结束后各自说一个身体最放松的瞬间。", "Afterward, each name one moment when your body felt most relaxed.", "終わったあと、いちばん体がゆるんだ瞬間を一つずつ話す。"),
+    photoPrompt: t("拍下离开时最想记住的一个安静细节：毛巾、茶杯、灯光或储物柜号码。", "Photograph one quiet detail you want to remember when leaving—a towel, teacup, light, or locker number.", "帰るときに残したい静かな細部を撮る。タオル、湯のみ、灯り、ロッカー番号など。"),
+    categories: ["relaxing", "indoor"], cost: "high", duration: "long", indoor: true, tags: ["wellness", "quiet", "private", "reservation", "cozy"],
+  },
+  {
+    id: "tufting-workshop",
+    title: t("一起做一块软乎乎的作品", "Tufting Workshop", "一緒にタフティング"),
+    description: t("预约一次 Tufting 或纤维手作体验，共同选颜色和图案，把时间花在一起做出一个东西。", "Book a tufting or fiber-craft workshop, choose colors and a simple design together, and make one shared piece.", "タフティングや繊維クラフトを予約し、色と簡単な図案を一緒に決めて一つの作品を作る。"),
+    littleMission: t("必须保留一个临时改变主意后加进去的颜色。", "Keep one color that was added after a last-minute change of mind.", "途中で気が変わって追加した色を一色だけ残す。"),
+    photoPrompt: t("不要拍完整成品。拍一处最能看出毛线纹理和手作痕迹的地方。", "Don't photograph the whole finished piece. Capture one spot where the fibers and handmade texture show best.", "完成品全体ではなく、糸の質感と手作り感がいちばん出ている部分を撮る。"),
+    categories: ["creative", "indoor"], cost: "medium", duration: "long", indoor: true, tags: ["craft", "collaboration", "hands-on", "reservation", "low-social"],
+  },
+  {
+    id: "private-cinema-night",
+    title: t("私人放映夜", "Private Cinema Night", "プライベート上映ナイト"),
+    description: t("找一个有投影仪的私人放映空间，选一部真正想看的电影，准备零食，把手机放远一点。", "Find a private screening space with a projector, choose a movie you genuinely want to watch, bring snacks, and keep phones out of reach.", "プロジェクターのある個室を選び、本当に見たい映画とおやつを用意して、スマホは少し遠くへ置く。"),
+    littleMission: t("散场后只说一个最喜欢的镜头，不做完整影评。", "Afterward, share just one favorite shot instead of reviewing the whole movie.", "終わったら長い感想ではなく、好きだった一場面だけ共有する。"),
+    photoPrompt: t("拍下电影开始前最像“今晚的片头”的一个东西：投影光、零食袋或空白幕布。", "Before the movie starts, photograph one thing that feels like tonight's opening shot—the projector light, snack bag, or blank screen.", "上映前に、今夜のオープニングみたいなものを撮る。投影の光、お菓子の袋、まだ白いスクリーンなど。"),
+    categories: ["indoor", "relaxing", "romantic"], cost: "medium", duration: "long", indoor: true, tags: ["movie", "private", "cozy", "night", "reservation"],
+  },
+  {
+    id: "scent-pick",
+    title: t("替彼此挑一种香味", "Scent Pick", "お互いの香りを選ぶ"),
+    description: t("去香水店闻一圈，不一定要买。各自挑一个“让我想到你”的味道，再告诉对方原因。", "Browse a perfume shop without needing to buy anything. Each choose one scent that reminds you of the other person and explain why.", "香水店を見て回り、買わなくてもOK。『相手を思い出す香り』を一つずつ選び、理由を話す。"),
+    littleMission: t("最后只保留两张试香纸，不要把所有味道都带走。", "Keep only two scent strips at the end instead of taking every sample.", "最後に残す試香紙は二枚だけにする。"),
+    photoPrompt: t("拍下最后留下来的两张试香纸，以及它们被写上的名字或符号。", "Photograph the two scent strips you kept, including any names or marks written on them.", "最後に残した二枚の試香紙と、そこに書いた名前や印を撮る。"),
+    categories: ["indoor", "romantic", "relaxing"], cost: "free", duration: "short", indoor: true, tags: ["scent", "shopping", "quiet", "public", "low-social"],
+  },
+  {
+    id: "one-color-hunt",
+    title: t("寻找今天的一种颜色", "One Color Hunt", "今日の一色を探す"),
+    description: t("出门前随机选一种颜色，散步时一路寻找它出现在招牌、衣服、花、车或建筑里的样子。", "Choose one color before heading out, then hunt for it in signs, clothes, flowers, cars, and buildings along the way.", "出かける前に一色決めて、看板、服、花、車、建物の中からその色を探しながら歩く。"),
+    littleMission: t("找到至少五个完全不同的载体。", "Find the color in at least five completely different kinds of things.", "まったく違う種類のものから、その色を最低5回見つける。"),
+    photoPrompt: t("拍下今天最后一次找到那种颜色的地方。", "Photograph the last place where you found today's color.", "今日最後にその色を見つけた場所を撮る。"),
+    categories: ["outdoor", "creative", "adventure"], cost: "free", duration: "medium", indoor: false, tags: ["exploration", "photo", "playful", "outdoor", "spontaneous"],
+  },
+  {
+    id: "comedy-show",
+    title: t("一起去看一场喜剧", "Comedy Show", "一緒にコメディを観る"),
+    description: t("选一场脱口秀、小剧场喜剧或即兴演出，让别人负责逗你们笑一晚上。", "Pick a stand-up, small-theater comedy, or improv show and let someone else be responsible for making you laugh tonight.", "スタンドアップ、小劇場コメディ、即興劇などを選んで、今夜は誰かに笑わせてもらう。"),
+    littleMission: t("散场后各自复述一句最记得的梗，但不要争论谁笑点更好。", "Afterward, each recall one joke or moment you remember most—no debate over whose taste is better.", "終演後、いちばん覚えているネタや瞬間を一つずつ話す。笑いの好みは競わない。"),
+    photoPrompt: t("拍下散场后仍然让你想到某个梗的小东西：票根、舞台门口、饮料杯或海报角落。", "Photograph one small thing after the show that still reminds you of a joke—a ticket, entrance, cup, or corner of the poster.", "終演後もネタを思い出させる小さなものを撮る。チケット、入口、カップ、ポスターの一部など。"),
+    categories: ["indoor", "adventure"], cost: "medium", duration: "medium", indoor: true, tags: ["culture", "playful", "public", "night", "reservation"],
   },
 ];
