@@ -1,14 +1,23 @@
-# myDate V1 Architecture
+# myDate V2/V3 Architecture — Memory First
 
-## Architecture Goal
+## Product Statement
 
-Keep V1 small, backend-free, and easy to test while preserving clean extension points.
+> People may change. The memories are still yours.
 
-The product rule remains:
+The permanent subject of myDate is the user. Dating partners and relationships may change over time, while completed experiences remain user-owned memories.
 
-**Activity First, Egg Second.**
+## Product Principles
 
-Date discovery and completion stay primary. Egg progress is a downstream reward layer and must never block activity discovery.
+1. Activity First.
+2. Memory Second.
+3. User-owned experiences.
+4. No relationship KPI.
+5. No relationship success/failure state.
+6. Backend-free.
+7. No accounts.
+8. No Solo mode yet.
+9. Keep the product minimal.
+10. Do not add abstractions for hypothetical future features.
 
 ## Stack
 
@@ -16,9 +25,9 @@ Date discovery and completion stay primary. Egg progress is a downstream reward 
 - React
 - TypeScript
 - Tailwind CSS
-- localStorage for V1 client-side persistence
+- localStorage only
 - no backend
-- no user account
+- no user accounts
 - no image upload or image database
 - Vercel for preview and production deployment
 
@@ -32,11 +41,11 @@ shared domain types
 content source + local persistence adapter
 ```
 
-UI components must not redefine domain models or access localStorage directly.
+UI must not redefine domain models or access localStorage directly.
 
 ## Canonical DateIdea Contract
 
-Canonical shared interfaces live in `src/types/domain.ts`.
+`DateIdea` remains the single built-in activity-content contract.
 
 ```ts
 interface DateIdea {
@@ -53,171 +62,285 @@ interface DateIdea {
 }
 ```
 
-`photoPrompt` is the required localized Memory Prompt. It never represents an uploaded or stored image.
+`photoPrompt` remains the localized Memory Prompt. myDate does not upload, store, or verify photos.
 
-## Canonical V1 Flow
+## Stable Activity Identity
 
-```text
-Date discovery
-→ Let's do it
-→ Adventure
-→ Complete
-→ Memory Prompt
-→ I got it / Skip
-→ Rating
-→ XP settlement
-→ Egg progress
-```
-
-## Adventure Identity and XP Idempotency
-
-Every started activity gets a unique `adventureId`.
-
-XP values are fixed:
-
-- adventure complete: +20 XP
-- Memory Prompt completed with `I got it`: +5 XP
-- rating completed: +5 XP
-
-Each AdventureRecord persists three award flags:
+Historical state must never depend on activity title.
 
 ```ts
-xpAwarded: {
-  adventure: boolean;
-  memoryPrompt: boolean;
-  rating: boolean;
+type ActivitySource = "builtin" | "custom";
+
+interface ActivityIdentity {
+  source: ActivitySource;
+  id: string;
 }
 ```
 
-These flags are the source of truth for exactly-once settlement. Total XP is derived from them and must never be maintained as an unguarded incrementing counter.
+Built-in activities use their stable `DateIdea.id` with `source: "builtin"`.
 
-The Memory Prompt +5 XP is committed when `I got it` resolves the Memory Prompt through the shared persistence adapter. Modal confirmation and reward animation are presentation-only and cannot grant XP.
+User-created activities use a generated stable id with `source: "custom"`. Editing a custom activity may change its title or content but must not change this id. Deleting the custom activity removes the editable activity definition only; existing Memories remain intact.
 
-`Skip` resolves the Memory Prompt with 0 XP and still continues to Rating.
+## Activity Snapshot
 
-## Rating Contract
-
-V1 Rating is a private per-adventure score:
+Every Adventure and Memory carries a small presentation snapshot:
 
 ```ts
-type DateRating = 1 | 2 | 3 | 4 | 5;
+interface ActivitySnapshot {
+  identity: ActivityIdentity;
+  title?: string;
+}
 ```
 
-The value is stored on the AdventureRecord:
+`identity` is authoritative for historical matching. `title` is only a presentation fallback so an old Memory can still render after the source activity is renamed or deleted.
+
+Do not match historical state using `activitySnapshot.title`.
+
+## Canonical Memory Contract
+
+Memory is the primary completed-experience domain object.
 
 ```ts
-rating?: DateRating;
-ratingCompletedAt?: string;
+type RatingScore = 1 | 2 | 3 | 4 | 5;
+
+interface MemoryRating {
+  overall?: RatingScore;
+  fun?: RatingScore;
+  comfort?: RatingScore;
+  doAgain?: RatingScore;
+}
+
+interface Memory {
+  id: string;
+  activitySnapshot: ActivitySnapshot;
+  completedAt: string;
+  memoryPromptCompleted: boolean;
+  rating?: MemoryRating;
+}
 ```
 
-Submitting a valid rating grants +5 XP exactly once for that `adventureId`.
+`overall` preserves the V1 single-score rating without inventing values for new dimensions.
 
-The rating value may later be changed without granting additional XP. Rating must not be available while Memory Prompt status is still `pending`.
+Partner identity, relationship state, XP, Egg progress, hatch state, and photo references are intentionally absent from Memory.
 
-The canonical UI continuation is:
+## Adventure Session Contract
+
+An in-progress activity uses:
+
+```ts
+interface AdventureSession {
+  id: string;
+  activitySnapshot: ActivitySnapshot;
+  startedAt: string;
+}
+```
+
+A completed Adventure creates exactly one Memory with the same id:
 
 ```text
-Memory Prompt resolved
-→ /rating?adventureId=<id>
-→ submit 1–5 rating
-→ XP settlement / Egg progress
+AdventureSession.id === Memory.id
 ```
 
-The exact route path may be implemented by UI, but Rating must remain a distinct step tied to the same `adventureId`.
+This is the completion idempotency key.
 
-## Egg Progression Contract
-
-Egg progression is **derived from persisted XP**, not stored as a second progress counter.
-
-Canonical V1 hatch threshold:
+## Canonical Flow
 
 ```text
-100 XP
+Discover Date Idea
+→ Let's do it
+→ Adventure
+→ Adventure Complete
+→ Memory created
+→ Memory Prompt
+→ I got it / Skip
+→ Experience Rating
+→ Memory Reward Animation
+→ +1 Memory
+→ Memories
 ```
 
-Derived stages:
+Business truth and presentation timing are intentionally different:
+
+- Memory is persisted at Adventure Complete.
+- `I got it` only changes `memoryPromptCompleted` to `true`.
+- `Skip` leaves it `false`.
+- Rating updates the existing Memory.
+- The final `+1 Memory` animation acknowledges the already-persisted Memory.
+
+## Historical Tried vs Current Discovery Round
+
+These are two separate concepts and must never share one boolean.
+
+### Historical Tried
+
+Historical state is derived from Memories:
 
 ```text
-0–24 XP   dormant
-25–49 XP  warming
-50–74 XP  glowing
-75–99 XP  cracking
-100+ XP   hatched
+hasTried(activity)
+=
+exists Memory where
+memory.activitySnapshot.identity == activity.identity
 ```
 
-`getEggProgress(saveData)` is the canonical derivation boundary.
+Canonical helper behavior:
 
-The result exposes:
+```ts
+hasTriedActivity(identity)
+getTriedCount(identity)
+```
 
-- total XP
-- hatch threshold
-- normalized progress from 0 to 1
-- stage
-- hatched boolean
+`hasTriedActivity` is the V3 UI requirement. `getTriedCount` is provided so future `Tried 2 times` UI does not require a data migration, but repetition count display is not required now.
 
-Hatching is deterministic: if persisted XP is at least 100, the Egg is hatched. No separate `eggProgress`, `eggXp`, or `hatched` field is persisted.
+Starting a new discovery round never changes historical Tried state.
 
-This avoids conflicting state such as saved XP saying 80 while a separately stored Egg counter says 60.
+Recommended labels:
 
-## MD-002 Reward Burst Boundary
+- English: `Tried`
+- Chinese: `做过`
+- Japanese: `体験済み`
 
-UI-only reward states are:
+Avoid `Completed`, because an activity may be repeated in future rounds.
+
+### Current Discovery Round
+
+The random discovery algorithm uses resettable state:
+
+```ts
+interface DiscoveryRound {
+  completedActivityKeys: string[];
+}
+```
+
+The key is generated from stable identity, not title.
+
+Completing an Adventure adds its activity key to the current round once. Starting a new round clears only this array.
+
+```text
+complete Adventure
+→ Memory persists forever
+→ Tried becomes true forever
+→ excluded from current random round
+
+Start a new round
+→ current-round exclusion resets
+→ Tried remains true
+→ activity becomes random-eligible again
+```
+
+This applies identically to built-in and custom activities.
+
+## Memory Prompt Semantics
+
+Memory Prompt completion is trust-based.
+
+```text
+I got it → memoryPromptCompleted = true
+Skip     → memoryPromptCompleted remains false
+```
+
+Skipping never prevents Memory creation. Once true, the flag is not downgraded by repeated navigation.
+
+## Rating Semantics
+
+Rating belongs to the Memory, not to a relationship and not to a reward settlement event.
+
+Legacy single rating migrates to `rating.overall`. Do not infer `fun`, `comfort`, or `doAgain` from it.
+
+## Reward Animation Contract
+
+The existing pale-yellow / champagne-gold reward animation is preserved and repurposed.
+
+```text
+stars → Memories icon / Memory counter → +1 Memory
+```
+
+Recommended presentation state:
 
 ```text
 idle
-→ rewardModalOpen
-→ rewardAnimationPlaying
-→ rewardAnimationComplete
+→ memoryRewardModalOpen
+→ memoryRewardAnimationPlaying
+→ memoryRewardAnimationComplete
 ```
 
-These states are never written to SaveData.
-
-Sequence:
-
-```text
-I got it
-→ resolveMemoryPrompt(adventureId, "completed")
-→ open reward modal
-→ OK
-→ star burst toward shared Egg mini icon
-→ Egg glow / bump
-→ continue to Rating
-```
-
-Interrupted or skipped animation must not change XP correctness.
-
-The animation target must be the actual shared Egg mini/progress UI state derived from persisted XP, not a decorative duplicate owned by the animation component.
-
-Reduced-motion may replace particle travel with a short +5 XP acknowledgment and Egg glow.
+These states are view-only and never persisted. The animation targets the real shared Memories counter derived from `memories.length`. Animation completion must not mutate Memory state.
 
 ## Persistence Boundary
 
-All V1 adventure progress goes through `src/lib/storage.ts`.
+All persistence goes through `src/lib/storage.ts`.
 
-The adapter owns:
+Canonical storage:
 
-- starting AdventureRecord
-- adventure completion
-- Memory Prompt resolution
-- Rating persistence and settlement
-- total XP derivation
-- Egg progress derivation
-- safe localStorage parsing and recovery
+```text
+key: mydate.save.v3
+SaveData.version = 3
+```
 
-UI must not write localStorage directly.
+```ts
+interface SaveData {
+  version: 3;
+  savedDateIds: string[];
+  activeAdventures: AdventureSession[];
+  memories: Memory[];
+  discoveryRound: DiscoveryRound;
+}
+```
 
-`SaveData.version = 2` remains the V1 schema for this contract.
+There is no XP, Egg, hatch, relationship progress, photo URL, or image data in SaveData.
+
+Historical Tried is not persisted as a separate boolean. It is always derived from `memories`.
+
+## V1 → Current Migration
+
+When no valid current save exists, valid completed V1 adventures migrate one-to-one into Memories.
+
+Legacy built-in ids become:
+
+```ts
+activitySnapshot.identity = {
+  source: "builtin",
+  id: legacyDateId,
+};
+```
+
+Legacy migration initializes `discoveryRound.completedActivityKeys` as empty. Historical Memories therefore immediately show Tried, while upgraded users begin with a fresh random-discovery round.
+
+Migration rules:
+
+- Memory count comes from completed experiences, never XP.
+- Invalid legacy records are skipped rather than crashing.
+- Legacy XP/Egg state is ignored.
+- Legacy rating maps only to `rating.overall`.
+- Migration does not infer current-round exclusions from historical Memories.
+
+## Removed Concepts
+
+The following must not remain in business state:
+
+- XP and XP settlement
+- XP delta badge
+- Egg system / customization / progress
+- hatch system / hatchGoal / isHatched
+- eggColor
+- petName
+- relationship progression
+- love progression
 
 ## Scope Protection
 
 Do not add:
 
-- image upload/storage/backend
-- duplicate DateIdea contracts
-- separate XP counters
-- separately persisted Egg progress
-- reward service layers
-- Redux solely for this flow
-- animation state in SaveData
+- backend APIs
+- accounts
+- cloud sync
+- photo upload/storage
+- relationship identity models
+- partner profiles
+- Solo mode
+- replacement gamification currency
+- a second Memory contract
+- a separate `tried` boolean
+- title-based historical matching
+- persisted animation state
 
-Add only the minimum code required for canonical flow state, idempotent XP, Rating continuity, and deterministic Egg progression.
+The architecture is correct when activity completion reliably creates user-owned Memories, current-round random exclusion resets independently, and historical Tried remains stable through refresh, new rounds, custom edits, and custom deletion.

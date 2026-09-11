@@ -1,19 +1,18 @@
-# myDate UI Boundaries
+# myDate V2/V3 Ownership Boundaries — Memory First
 
 ## Product Priority
 
 The UI must preserve this order:
 
 1. Activity discovery
-2. Random / quick choice
+2. Random / lightweight category filtering
 3. Adventure flow
 4. Memory Prompt
-5. Reward feedback
-6. Rating
-7. XP settlement
-8. Egg progress
+5. Experience Rating
+6. Memory reward feedback
+7. Memories
 
-The Egg must not become the primary CTA or navigation gate.
+Historical `Tried` is secondary metadata. It must never visually dominate activity discovery.
 
 ## Mobile UI Developer Ownership
 
@@ -23,195 +22,182 @@ Primary ownership:
 - `src/components/activity/**`
 - `src/components/layout/**`
 - `src/components/ui/**`
-- `src/components/egg/**`
+- `src/components/memory/**` if introduced
 - UI-related assets
 
-UI responsibilities for the V1 flow:
+UI responsibilities:
 
-- consume the canonical DateIdea contract
-- render localized `photoPrompt` after completion
-- provide `I got it` and `Skip`
-- call shared persistence helpers for adventure / Memory Prompt / rating completion
-- preserve `adventureId` through refresh/back navigation
-- implement MD-002 reward feedback after successful `I got it`
-- implement the local presentation state sequence:
-  - `idle`
-  - `rewardModalOpen`
-  - `rewardAnimationPlaying`
-  - `rewardAnimationComplete`
-- show a lightweight reward modal before the animation
-- animate a small pale-yellow / champagne-gold star burst toward the Egg mini icon
-- make the Egg mini icon glow / bump once
-- respect reduced-motion preferences with a simpler fallback where feasible
-- continue to Rating even if the animation is skipped or interrupted
+- consume canonical `DateIdea`, `ActivityIdentity`, `ActivitySnapshot`, `AdventureSession`, and `Memory`
+- preserve stable activity identity across built-in and custom activity flows
+- render `Tried` from `hasTriedActivity(identity)` wherever practical: Discover cards, filtered lists, My Ideas, and activity detail
+- localize the indicator as `Tried` / `做过` / `体験済み`
+- keep Tried visually subtle
+- use current-round completion only for random-discovery eligibility
+- provide `Start a new round` behavior through the shared storage adapter
+- after `completeAdventure()`, continue using the resulting Memory id
+- render localized `photoPrompt`
+- implement `I got it` / `Skip`
+- update Memory Prompt completion through the shared adapter
+- collect private experience rating and update the existing Memory
+- repurpose the gold-star reward toward the real Memories icon / counter
+- render persisted Memories
+- keep Memory counter hydration-safe
+- respect reduced-motion preferences
 
 UI must not:
 
-- redefine DateIdea
-- maintain a second Memory Prompt catalog
-- upload photos
-- store photo URLs
-- access localStorage directly
-- grant XP by unguarded local component increments
-- make XP settlement depend on animation completion
-- persist reward modal or animation state
-- let animation components call persistence helpers directly
+- redefine shared domain types
+- write localStorage directly
+- persist a separate `tried` boolean
+- clear Tried when starting a new round
+- match history by activity title
+- create a Memory from animation completion
+- derive Memory count from XP
+- reintroduce Egg/XP UI as hidden business state
+- upload, store, or verify photos
 
-### MD-002 Component Boundary
+## Historical Tried Boundary
 
-The flow/container component owns orchestration:
+The UI must treat these as different inputs:
 
 ```text
-user action
-→ persistence adapter call
-→ local reward UI state
-→ presentation animation
-→ next step
+historical Tried
+→ derived from Memory.activitySnapshot.identity
+
+current-round completed
+→ derived from discoveryRound.completedActivityKeys
 ```
 
-View-only animation components may receive props such as:
+A new discovery round resets only the second input.
 
-- whether they are active
-- source position
-- Egg target position
-- reduced-motion flag
-- completion callback for UI sequencing only
+Repeated experiences remain separate Memories. V3 only needs a boolean indicator, but UI may later use `getTriedCount(identity)` without schema changes.
 
-They must not receive SaveData mutation responsibilities.
+For custom activities, UI must keep the generated stable id unchanged when title/content is edited. Deleting a custom activity must never delete its Memories.
+
+## Reward Component Boundary
+
+The flow/container owns orchestration:
+
+```text
+persist business state
+→ local reward state
+→ presentation animation
+→ next navigation state
+```
+
+The animation component is view-only and must not mutate Memory or discovery state.
 
 ## Date Content Developer Ownership
 
 Primary ownership:
 
 - `src/data/dateIdeas.ts`
-- future date-content assets directly tied to content
+- content documentation directly tied to date ideas
 
 Content responsibilities:
 
-- every DateIdea must contain localized `photoPrompt`
-- `photoPrompt` must provide `zh`, `en`, and `ja`
-- Memory Prompts should suggest one meaningful visual detail rather than default to posed couple photos
-- prompts may reference environment, objects, body details, shadows, food, souvenirs, creations, or small visual details
+- keep built-in `DateIdea.id` stable once released; ids are historical identity
+- preserve one canonical localized `photoPrompt` for every DateIdea
+- keep zh/en/ja complete
+- avoid upload, verification, relationship-success, or permanence wording
 
 Content must not:
 
-- change shared types
-- create another prompt lookup table
-- add upload/storage language to Memory Prompts
-- rewrite UI layout or business logic
+- rename/recycle an existing built-in id for a different activity
+- use title as identity
+- introduce a second Memory Prompt catalog
+- add partner identity or relationship score fields
+- modify shared domain types
 
 ## Lead Architect Ownership
 
 Primary ownership:
 
 - `src/types/**`
-- `src/lib/storage.ts` persistence boundary
-- shared architecture boundaries
-- cross-feature contracts
+- `src/lib/storage.ts`
 - persistence schema/version
-- XP idempotency contract
+- migration contract
+- stable activity identity and snapshot rules
+- Memory idempotency
+- discovery-round vs historical-state separation
 - architecture documentation
 
-Architect owns the rule that each started activity gets a unique `adventureId` and each XP source can be awarded at most once for that id.
+Architect invariants:
 
-For MD-002, Architect also owns the rule that reward animation is presentation-only and requires no new SaveData field.
+- one completed Adventure creates exactly one Memory
+- Memory id reuses AdventureSession id
+- Historical Tried is derived from Memory history
+- Current-round exclusion is resettable and separate
+- Built-in/custom matching uses stable identity, never title
+- deleting an activity definition cannot delete existing Memories
+- Memory count is `memories.length`, never XP-derived
+- no relationship KPI is reintroduced under another name
 
 ## Troubleshooting Ownership
 
-Troubleshooting has exception-based access across files only for confirmed integration bugs.
+Allowed fixes include:
 
-Rule:
-
-> Fix the bug, not the architecture.
-
-Troubleshooting may fix:
-
-- broken `adventureId` propagation
-- stale flow state
-- modal that cannot dismiss
-- animation that never completes its UI callback
-- star burst targeting the wrong Egg icon
-- reduced-motion fallback failures
-- visual replay bugs
-- integration failures between the flow container and Egg mini icon
+- lost activity/adventure/memory id across navigation
+- duplicate Memory creation
+- duplicate current-round keys
+- stale Tried indicator after Memory persistence
+- new-round reset accidentally clearing historical display
+- custom edit breaking identity propagation
+- migration failures
+- corrupted localStorage recovery
+- stale Memory counter
+- reward target or reduced-motion failures
+- hydration mismatches
 
 Troubleshooting must not:
 
-- invent a second XP system
-- add persisted animation flags
-- move XP settlement into animation callbacks
-- create a second DateIdea contract or persistence path
+- add a second Tried store/boolean
+- match activity history by title
+- reintroduce XP/Egg state
+- add a second persistence path
+- create Memories from animation callbacks
+- delete Memories when a custom activity is deleted
 
-Any non-trivial change to XP settlement, storage schema, or domain types requires Architect review.
+Non-trivial changes to identity, migration, or persistence require Architect review.
 
 ## QA & Release Ownership
 
-Primary ownership:
-
-- tests
-- e2e flows
-- release checklist
-- CI/release configuration
-
 QA must verify:
 
-- every DateIdea includes a localized Memory Prompt
+- completed Adventure creates one Memory exactly once
+- completing an activity shows Tried
+- refresh does not remove Tried
+- starting a new round does not remove Tried
+- a Tried activity is eligible again in a new round
+- repeated completion does not create duplicate current-round keys
+- built-in and custom activities use the same semantics
+- editing a custom activity keeps Tried through stable identity
+- deleting a custom activity leaves existing Memories intact
+- title changes/collisions do not affect historical matching
+- Skip still preserves Memory
+- `I got it` updates the same Memory
+- rating updates the same Memory
+- reward animation does not create or increment business state
+- legacy completed adventures migrate to Memories
+- corrupted current/legacy data fails safely
+- no Egg/XP/relationship progression remains
 - no photo upload/storage/backend behavior exists
-- `I got it` grants Memory Prompt XP once
-- `Skip` grants no Memory Prompt XP
-- adventure completion grants +20 once
-- rating completion grants +5 once
-- refresh/back/repeated actions do not duplicate any XP source
-- the same DateIdea can be started again as a new adventure and earn XP normally
-- Egg progress reads the correct derived XP
+- zh/en/ja primary flow remains intact
 
-MD-002 QA must additionally verify:
+## Obsolete V1 UI
 
-- tapping `I got it` attempts business settlement before reward presentation
-- reward modal opens after the action
-- tapping `OK` starts the presentation-only reward animation
-- star burst travels toward the Egg mini icon under normal motion settings
-- Egg mini icon glows / bumps once
-- interrupting or skipping the animation does not lose or duplicate XP
-- refreshing after `I got it` does not grant another +5 XP
-- going back and tapping `I got it` again does not grant another +5 XP
-- replaying a visual effect does not change persisted XP
-- reduced-motion users receive a simpler non-traveling feedback where supported
-- Rating remains reachable even if the animation is interrupted
+Remove after V2/V3 integration:
 
-QA should report product bugs instead of silently changing architecture on `release/v1`.
+- `/egg`
+- `EggMiniProgress`
+- `EggView`
+- Egg-specific styles/assets
+- Egg links
+- XP labels/delta feedback
+- hatch/progression copy and visuals
+
+The existing `RewardBurst` may be reused after making its target Memory-specific or generic.
 
 ## Data Boundary Rule
 
-Components must not hard-code independent activity datasets or Memory Prompts.
-
-Good:
-
-```ts
-import { dateIdeas } from "@/data/dateIdeas";
-```
-
-There must be one canonical DateIdea source in V1.
-
-## Visual Direction
-
-V1 visual language:
-
-- mobile first
-- white dominant background
-- subtle gold accent / shimmer
-- minimal and calm
-- quick scanning
-- limited decoration
-- generous but not wasteful spacing
-
-MD-002 reward feedback should use:
-
-- small pale-yellow / champagne-gold stars
-- restrained particle count
-- short duration
-- one directional motion toward Egg
-- one soft Egg glow / bump
-- no loud arcade-heavy presentation
-
-XP and Egg feedback should feel like a lightweight reward after the activity, not the reason to use the product.
+Components must consume canonical sources and helpers. There must be one canonical activity source per activity kind and one persisted Memory source.
