@@ -1,22 +1,24 @@
 import { dateIdeas } from "../../data/dateIdeas";
 import { MobileShell } from "../../components/layout/MobileShell";
+import { RandomResultContent } from "../../components/activity/RandomResultContent";
 import { ResultContent } from "../../components/activity/ResultContent";
 
 interface ResultPageProps {
   searchParams?: Promise<{ id?: string; mode?: string }>;
 }
 
-function pickRandomIdea() {
-  if (dateIdeas.length === 0) return undefined;
-  return dateIdeas[Math.floor(Math.random() * dateIdeas.length)];
-}
-
 export default async function ResultPage({ searchParams }: ResultPageProps) {
   const params = await searchParams;
-  const idea =
-    params?.mode === "random"
-      ? pickRandomIdea()
-      : dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
+
+  if (params?.mode === "random") {
+    return (
+      <MobileShell backHref="/">
+        <RandomResultContent ideas={dateIdeas} />
+      </MobileShell>
+    );
+  }
+
+  const idea = dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
     <MobileShell backHref="/">
