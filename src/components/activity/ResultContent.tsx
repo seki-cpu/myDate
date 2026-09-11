@@ -34,14 +34,17 @@ export function ResultContent({ idea }: ResultContentProps) {
     );
   }
 
+  const ideaId = idea.id;
+  const ideaTitle = localizedIdea.title;
+
   function beginAdventure() {
     if (starting) return;
     setStarting(true);
     const adventure = startAdventure({
-      identity: { source: "builtin", id: idea.id },
-      title: localizedIdea.title,
+      identity: { source: "builtin", id: ideaId },
+      title: ideaTitle,
     });
-    router.push(`/adventure?id=${idea.id}&adventureId=${adventure.id}`);
+    router.push(`/adventure?id=${ideaId}&adventureId=${adventure.id}`);
   }
 
   return (
@@ -50,7 +53,7 @@ export function ResultContent({ idea }: ResultContentProps) {
         <div className="result-number">{copy.resultPick}</div>
         <div className="activity-meta">
           <span className="eyebrow">{localizedIdea.categories[0] ?? ""}</span>
-          <TriedBadge identity={{ source: "builtin", id: idea.id }} />
+          <TriedBadge identity={{ source: "builtin", id: ideaId }} />
         </div>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
