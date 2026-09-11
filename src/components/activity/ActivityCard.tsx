@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { ActivityIdentity, DateIdea } from "../../types/domain";
 import { hasTriedActivity } from "../../lib/storage";
 import { localizeIdea, useLocale } from "../ui/locale";
+import triedStyles from "./tried.module.css";
 
 interface ActivityCardProps {
   idea: DateIdea;
@@ -32,7 +33,7 @@ export function ActivityCard({ idea }: ActivityCardProps) {
         {idea.categories[0] ? <span className="meta-pill">{idea.categories[0]}</span> : null}
         <span className="meta-pill">{idea.duration}</span>
         <span className="meta-pill">{idea.cost}</span>
-        {tried ? <span className="tried-pill">{triedCopy[locale]}</span> : null}
+        {tried ? <span className={triedStyles.badge}>{triedCopy[locale]}</span> : null}
       </div>
       <h3 className="activity-title">{localizedIdea.title}</h3>
       <p className="activity-description">{localizedIdea.description}</p>
