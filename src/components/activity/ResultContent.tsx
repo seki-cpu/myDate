@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { ActivityIdentity, DateIdea } from "../../types/domain";
 import { hasTriedActivity, startAdventure } from "../../lib/storage";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
+import triedStyles from "./tried.module.css";
 
 interface ResultContentProps {
   idea?: DateIdea;
@@ -62,7 +63,7 @@ export function ResultContent({ idea }: ResultContentProps) {
         <div className="result-number">{copy.resultPick}</div>
         <div className="activity-meta">
           <span className="eyebrow">{localizedIdea.categories[0] ?? ""}</span>
-          {tried ? <span className="tried-pill">{triedCopy[locale]}</span> : null}
+          {tried ? <span className={triedStyles.badge}>{triedCopy[locale]}</span> : null}
         </div>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
