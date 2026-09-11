@@ -2,23 +2,36 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import type { DateIdea } from "../../types/domain";
-import { startAdventure } from "../../lib/storage";
+import { useEffect, useState } from "react";
+import type { ActivityIdentity, DateIdea } from "../../types/domain";
+import { hasTriedActivity, startAdventure } from "../../lib/storage";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface ResultContentProps {
   idea?: DateIdea;
 }
 
+const triedCopy = {
+  zh: "做过",
+  en: "Tried",
+  ja: "体験済み",
+} as const;
+
 export function ResultContent({ idea }: ResultContentProps) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
+  const [tried, setTried] = useState(false);
   const locale = useLocale();
   const copy = flowCopy[locale];
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
 
-  if (!localizedIdea) {
+  useEffect(() => {
+    if (!idea) return;
+    const identity: ActivityIdentity = { source: "builtin", id: idea.id };
+    setTried(hasTriedActivity(identity));
+  }, [idea]);
+
+  if (!localizedIdea || !idea) {
     return (
       <section className="empty-card">
         <p className="eyebrow">{copy.resultPreview}</p>
@@ -36,15 +49,21 @@ export function ResultContent({ idea }: ResultContentProps) {
   function beginAdventure() {
     if (starting) return;
     setStarting(true);
-    const adventure = startAdventure(localizedIdea.id);
-    router.push(`/adventure?id=${localizedIdea.id}&adventureId=${adventure.id}`);
+    const adventure = startAdventure({
+      identity: { source: "builtin", id: idea.id },
+      title: localizedIdea.title,
+    });
+    router.push(`/adventure?id=${idea.id}&adventureId=${adventure.id}`);
   }
 
   return (
     <>
       <section className="result-hero">
         <div className="result-number">{copy.resultPick}</div>
-        <p className="eyebrow">{localizedIdea.categories[0] ?? ""}</p>
+        <div className="activity-meta">
+          <span className="eyebrow">{localizedIdea.categories[0] ?? ""}</span>
+          {tried ? <span className="tried-pill">{triedCopy[locale]}</span> : null}
+        </div>
         <h1 className="page-title">{localizedIdea.title}</h1>
         <p className="page-copy">{localizedIdea.description}</p>
         <div className="detail-grid">
