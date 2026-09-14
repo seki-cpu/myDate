@@ -1,6 +1,6 @@
 # V3 Memory Journal setup
 
-This implementation follows `myDate_V3_Memory_Journal.md`. Photo Handoff is deferred. Earlier V2 documents describe the historical local-only implementation and do not constrain V3 journal storage.
+This implementation follows the current V3 Memory Journal architecture in `docs/architecture.md`.
 
 ## Create the backend
 
@@ -16,13 +16,57 @@ Without configuration, public activity discovery remains usable and journal scre
 
 ## Application flow
 
-- `/account`: temporary username/password sign-in, registration, and sign-out. Usernames are mapped to internal Supabase Auth email identifiers; there is no email recovery yet.
-- `/memories`: authenticated history, optional legacy import, first-photo covers, mood and note excerpts.
-- `/memories/new`: create a past Memory, either linked to a stable built-in activity ID or free-form with no activity identity. After saving, its detail screen accepts photos.
-- `/memories/{id}`: edit date, ratings, moods and note; add/remove photos; view full-screen photos; delete a Memory and its photos.
-- Adventure completion: sign in if needed, choose optional experience ratings and a prompt outcome, save remotely, then receive the existing reward animation and an optional journal-edit link. Empty journals are valid.
+- `/account`: temporary username/password sign-in, registration, and sign-out.
+- `/memories`: authenticated Memory history, optional legacy import, first-photo covers, mood and note excerpts.
+- `/memories/new`: create a past Memory, either linked to a stable built-in activity ID or free-form with no activity identity.
+- `/memories/{id}/create`: enrich the already-created Adventure Memory with optional journal text and optional photos, then save and open Memory detail.
+- `/memories/{id}`: edit date, optional moods and journal text; add/remove/view photos; delete a Memory and its photos.
+- Adventure completion: sign in if needed, choose `I got it` or `Skip` for the Memory Prompt, create the Memory idempotently, then continue to the Create Memory page.
 
-Activity snapshots are captured when an Adventure starts, or when a past Memory is created. They are immutable to authenticated database updates. User-authored strings are preserved, including mood whitespace. Linked Tried indicators and the counter read the current account's database history. Discovery rounds and unfinished Adventures remain browser-local.
+### Adventure completion boundary
+
+The Memory row exists before `/memories/{id}/create` opens.
+
+The Adventure uses a stable source key:
+
+```text
+adventure:<adventureId>
+```
+
+The database uniqueness constraint ensures repeated completion requests return the same Memory instead of inserting duplicates.
+
+### Create Memory
+
+Create Memory is an enrichment/update surface, not a second creation event.
+
+It contains:
+
+- Activity title
+- Experience date
+- Memory Prompt text when available
+- Optional journal textarea backed by `memories.note`
+- Optional photo upload backed by `memory_images` + private Storage
+- Save Memory action
+
+A Memory with no journal text and no photos is valid.
+
+Photo uploads may happen before the user taps Save Memory because the Memory row already exists. Users may remove uploaded photos before saving or edit the photo set later from Memory detail.
+
+## Rating compatibility
+
+User-facing rating UI is removed from the V3 Memory creation/editing flow.
+
+Legacy rating fields may remain in database/domain structures for compatibility with older records and migration, but the V3 UI must not:
+
+- render rating controls
+- require rating
+- generate new rating values
+- use rating as a Save Memory prerequisite
+- replace rating with another scoring system
+
+## Moods
+
+Moods remain optional metadata in the existing architecture. They are not required during Create Memory and may remain available in later editing flows.
 
 ## Service and security boundaries
 
@@ -32,38 +76,58 @@ Activity snapshots are captured when an Adventure starts, or when a past Memory 
 - `JournalProvider`: one account-scoped in-memory history cache; clears on account changes and rejects stale list responses.
 - Database RLS checks `auth.uid() = user_id`; composite foreign keys prevent linking another owner's Memory. Column grants protect ownership and snapshots.
 - Photo rows reserve one of nine unique slots before upload, locking the parent Memory. This counts incomplete reservations toward the limit and rejects a tenth insert even when bypassing the UI.
-- Storage policies require a matching owned reservation. No public URLs, transfer tokens, signed sharing links, or public bucket are generated. Photos are fetched with the authenticated SDK into revocable browser Blob URLs.
-- Remove photo objects through the Storage API before removing their metadata. A database trigger blocks metadata deletion while an object exists. Parent deletion is restricted until image rows are removed. Partial failures remain retryable; interrupted upload reservations are shown with a remove action.
-- The optional `profiles` table provides the minimal locale/user metadata contract. Auth user ID is the authoritative owner; the temporary username mapping and password are provider-managed.
+- Storage policies require a matching owned reservation. No public URLs, transfer tokens, signed sharing links, or public bucket are generated.
+- Remove photo objects through the Storage API before removing their metadata. A database trigger blocks metadata deletion while an object exists. Parent deletion is restricted until image rows are removed.
+- The optional `profiles` table provides minimal locale/user metadata. Auth user ID is the authoritative owner.
 
 ## Photos
 
-The picker accepts JPEG, PNG, WebP and HEIC/HEIF, with a 20 MiB input limit. Uploads run sequentially to bound memory use. HEIC uses a lazy-loaded browser converter; an unsupported HEIC variant gets an explicit JPEG-export recovery message. Multi-image HEIC containers keep the first image.
+The picker accepts JPEG, PNG, WebP and HEIC/HEIF, with a 20 MiB input limit. Uploads run sequentially to bound memory use. HEIC uses a lazy-loaded browser converter; an unsupported HEIC variant gets an explicit JPEG-export recovery message.
 
-Canvas normalization applies orientation, caps the longest edge at 2400 px, uses a white background for transparency, and exports JPEG at quality 0.9. Re-encoding omits source EXIF/GPS metadata. The normalized result must fit the 6 MiB bucket limit. Users can retry individual failures. Image processing is client-side for this private beta; the bucket also enforces MIME/size limits but does not perform independent pixel/EXIF validation of a malicious custom client's bytes.
+Canvas normalization applies orientation, caps the longest edge at 2400 px, uses a white background for transparency, and exports JPEG at quality 0.9. Re-encoding omits source EXIF/GPS metadata. The normalized result must fit the 6 MiB bucket limit.
+
+Users may:
+
+- add photos during Create Memory
+- preview uploaded photos
+- remove photos before leaving Create Memory
+- add/remove/view photos later in Memory detail
+
+Deleting a photo never deletes the Memory row.
 
 ## Legacy migration
 
 Local history remains a backup and is imported only when the signed-in user selects the import action. The importer salvages valid current-schema rows, supports older migration formats, and skips invalid timestamps. The server generates Memory IDs. `(user_id, source_key)` makes retries return the existing record rather than overwrite edits or insert duplicates.
 
-A browser-local owner marker binds a started import to one account; the completed marker is written only after all candidates succeed. An invalid record leaves a recoverable status and the original data intact. No original local history is deleted. Browser backup restoration into a fresh browser is a new explicit import; do not manually clear migration markers to repeat a completed import after deleting imported Memories.
+Legacy rating values may be preserved during import, but the current UI does not expose rating controls or create new ratings.
 
 ## Verification
 
-Run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`.
+Run:
 
-The automated database test executes the migration in PGlite PostgreSQL, with small test-only Auth/Storage schema fixtures. It exercises owner isolation, anonymous denial, immutable snapshots, ratings, nine-photo limit, reserved-slot reuse, private object policies, safe deletion and duplicate source keys. Separate tests cover input formats, size limits, partial legacy recovery and discovery-history separation. These checks are not a substitute for a real Supabase Auth/Storage integration run.
+```text
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm build
+```
 
 Before beta release, use two real accounts to verify:
 
-1. Email registration/confirmation, sign-in/out, refresh and relogin persistence.
-2. Empty Memory creation, linked/free-form past Memories, unchanged snapshot titles, optional ratings, Chinese/Japanese/English UI and unmodified user text.
-3. Nine photos accepted; ten rejected; partial failure retry; interrupted upload removal; fullscreen previous/next/close.
-4. JPEG/PNG/WebP, rotated iPhone photos, actual HEIC/HEIF files from target iPhones, oversized and malformed files.
-5. User B cannot read, modify or delete User A's rows or fetch User A's storage objects through the SDK, guessed IDs or raw URLs.
-6. Import retries, invalid local rows, account switching and source backups; new Discovery round preserves Tried.
-7. iOS Safari, Android Chrome and desktop Chrome/Edge, including low-memory devices and slow uploads.
+1. Registration/sign-in/out, refresh and relogin persistence.
+2. `I got it` and `Skip` both reach Create Memory and resolve to one Memory per Adventure.
+3. Empty journal + zero photos saves successfully.
+4. Text-only Memory saves.
+5. Photo-only Memory saves.
+6. Text + photos saves.
+7. No rating UI appears in creation/detail editing surfaces.
+8. Journal text can be edited later.
+9. Photos can be added and removed later without deleting the Memory.
+10. Activity Snapshot remains unchanged through journal/photo edits.
+11. Legacy Memories still render.
+12. Nine photos accepted; ten rejected; partial upload failures remain recoverable.
+13. User B cannot read, modify or delete User A's rows or fetch User A's storage objects.
+14. Chinese/Japanese/English UI remains consistent.
+15. iOS Safari, Android Chrome and desktop Chrome/Edge remain usable.
 
-Supabase project provisioning and real-device/cloud integration are pending until project configuration is supplied. Do not merge into `master` before this QA matrix passes.
-
-References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Storage access control](https://supabase.com/docs/guides/storage/security/access-control), [Storage deletion](https://supabase.com/docs/guides/storage/management/delete-objects), [HEIC converter](https://github.com/alexcorvi/heic2any).
+Supabase project provisioning and real-device/cloud integration remain release gates. Do not merge into `master` before the QA matrix passes.
