@@ -8,6 +8,7 @@ interface MobileShellProps {
   backHref?: string;
   trailingHref?: string;
   trailingLabel?: string;
+  variant?: "default" | "wide" | "focused";
 }
 
 export function MobileShell({
@@ -15,12 +16,13 @@ export function MobileShell({
   backHref,
   trailingHref,
   trailingLabel,
+  variant = "default",
 }: MobileShellProps) {
   const hasTrailingAction = Boolean(trailingHref && trailingLabel);
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
+    <main className={`app-shell app-shell-${variant}`}>
+      <header className="topbar mobile-topbar">
         {backHref ? (
           <Link className="icon-link" href={backHref} aria-label="Go back">
             ←
@@ -42,7 +44,36 @@ export function MobileShell({
           ) : null}
         </div>
       </header>
-      {children}
+
+      <header className="desktop-header">
+        <div className="desktop-header-inner">
+          <div className="desktop-header-start">
+            <Link className="brand" href="/">
+              <span className="brand-mark" aria-hidden="true" />
+              myDate
+            </Link>
+            <nav className="desktop-nav" aria-label="Primary navigation">
+              <Link className="desktop-nav-link" href="/">Discover</Link>
+              <Link className="desktop-nav-link" href="/memories">Memories</Link>
+            </nav>
+          </div>
+
+          <div className="topbar-actions">
+            {backHref ? (
+              <Link className="desktop-back-link" href={backHref}>← Back</Link>
+            ) : null}
+            <MemoryMiniCounter />
+            <LanguageMenu />
+            {hasTrailingAction ? (
+              <Link className="section-link" href={trailingHref!}>
+                {trailingLabel}
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <div className="app-content">{children}</div>
     </main>
   );
 }
