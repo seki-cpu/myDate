@@ -24,14 +24,16 @@ export default function MemoriesPage() {
   }, []);
 
   return (
-    <MobileShell backHref="/">
-      <p className="eyebrow">{text.eyebrow}</p>
-      <h1 className="page-title">{text.title}</h1>
-      <p className="page-copy">{text.description}</p>
+    <MobileShell backHref="/" variant="wide">
+      <div className="journal-heading">
+        <p className="eyebrow">{text.eyebrow}</p>
+        <h1 className="page-title">{text.title}</h1>
+        <p className="page-copy">{text.description}</p>
+      </div>
 
-      <section className="section">
+      <section className="section journal-section">
         {memories.length === 0 ? (
-          <div className="memory-card">
+          <div className="memory-card memory-empty-card">
             <div className="memory-thumb" aria-hidden="true">✦</div>
             <div>
               <h2 className="empty-title">{text.empty}</h2>
@@ -39,7 +41,7 @@ export default function MemoriesPage() {
             </div>
           </div>
         ) : (
-          <div className="activity-list">
+          <div className="memory-list">
             {memories.map((memory) => {
               const identity = memory.activitySnapshot.identity;
               const idea = identity.source === "builtin"
@@ -47,14 +49,19 @@ export default function MemoriesPage() {
                 : undefined;
               const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
               const title = localizedIdea?.title ?? memory.activitySnapshot.title ?? text.deletedFallback;
+              const date = new Date(memory.completedAt).toLocaleDateString(
+                locale === "zh" ? "zh-CN" : locale === "ja" ? "ja-JP" : "en-US"
+              );
 
               return (
-                <article className="memory-card" key={memory.id}>
-                  <div className="memory-thumb" aria-hidden="true">✦</div>
-                  <div>
-                    <h2 className="empty-title">{title}</h2>
-                    <p className="empty-copy">{new Date(memory.completedAt).toLocaleDateString(locale === "zh" ? "zh-CN" : locale === "ja" ? "ja-JP" : "en-US")}</p>
-                    <p className="empty-copy">{memory.memoryPromptCompleted ? text.promptDone : text.promptSkipped}</p>
+                <article className="memory-journal-row" key={memory.id}>
+                  <time className="memory-date" dateTime={memory.completedAt}>{date}</time>
+                  <div className="memory-card">
+                    <div className="memory-thumb" aria-hidden="true">✦</div>
+                    <div className="memory-content">
+                      <h2 className="empty-title">{title}</h2>
+                      <p className="empty-copy">{memory.memoryPromptCompleted ? text.promptDone : text.promptSkipped}</p>
+                    </div>
                   </div>
                 </article>
               );
@@ -63,7 +70,7 @@ export default function MemoriesPage() {
         )}
       </section>
 
-      <div className="action-stack">
+      <div className="action-stack journal-actions">
         <Link className="primary-button" href="/">{text.back}</Link>
       </div>
     </MobileShell>
