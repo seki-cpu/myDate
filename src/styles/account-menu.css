@@ -12,7 +12,7 @@
   right: 0;
   z-index: 70;
   display: grid;
-  width: 176px;
+  width: 214px;
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -25,20 +25,29 @@
   min-height: 44px;
   align-items: center;
   gap: 10px;
+  width: 100%;
   padding: 10px 12px;
+  border: 0;
   border-radius: 12px;
+  background: transparent;
   color: var(--text);
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
+  text-align: left;
+  cursor: pointer;
 }
 
 .user-menu-item:hover,
-.user-menu-item:focus-visible {
+.user-menu-item:focus-visible,
+.user-menu-language-option:hover,
+.user-menu-language-option:focus-visible {
   background: var(--gold-wash);
 }
 
 .user-menu-item:focus-visible,
 .user-menu-trigger:focus-visible,
+.user-menu-language-option:focus-visible,
 .settings-option:focus-visible {
   outline: 3px solid rgba(184, 148, 82, 0.28);
   outline-offset: 2px;
@@ -48,8 +57,44 @@
   display: grid;
   width: 24px;
   height: 24px;
+  flex: 0 0 24px;
   place-items: center;
   color: var(--gold);
+}
+
+.user-menu-chevron {
+  margin-left: auto;
+  color: var(--gold);
+  font-size: 12px;
+}
+
+.user-menu-language-options {
+  display: grid;
+  gap: 4px;
+  margin: 2px 0 4px 34px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(184, 148, 82, 0.24);
+}
+
+.user-menu-language-option {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.user-menu-language-option.is-active {
+  color: var(--gold);
+  background: var(--gold-wash);
 }
 
 .journal-signed-out {
@@ -114,6 +159,6 @@
 
 @media (max-width: 600px) {
   .user-menu-popover {
-    width: 164px;
+    width: 204px;
   }
 }
