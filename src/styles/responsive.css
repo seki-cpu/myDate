@@ -331,7 +331,8 @@
   }
 
   .journal-actions {
-    margin-left: 178px;
+    width: min(100%, 320px);
+    margin: 28px auto 0;
   }
 
   .journal-actions .primary-button {
