@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import type { DateIdea } from "../../types/domain";
 import { finishJournalAdventure, loadSaveData } from "../../lib/storage";
 import { MemoryService } from "../../lib/services/memories";
 import { useJournal } from "../memory/JournalProvider";
 import { AccountPanel } from "../memory/AccountPanel";
 import { journalCopy } from "../memory/journalCopy";
-import { notifyMemoryReward } from "../memory/MemoryMiniCounter";
-import { flowCopy, localizeIdea, localizePhotoPrompt, useLocale } from "../ui/locale";
-import { RewardBurst, type RewardPoint } from "./RewardBurst";
+import {
+  flowCopy,
+  localizeIdea,
+  localizePhotoPrompt,
+  useLocale,
+} from "../ui/locale";
 import styles from "./reward.module.css";
 
 interface CompleteContentProps {
@@ -19,39 +21,29 @@ interface CompleteContentProps {
   memoryId?: string;
 }
 
-type RewardPhase = "idle" | "modal" | "animating" | "done";
 type SaveError = "backend" | "generic" | null;
 
 const memoryPromptCopy = {
   zh: {
     eyebrow: "记忆提示",
     title: "留下一点今天的痕迹。",
-    note: "不用露脸。照片只留在你平时的手机相册里，myDate 不需要上传。想拍就拍，也可以跳过。",
+    note: "不用露脸。你可以照着提示拍，也可以跳过；两种情况都会继续创建这段 Memory。",
     gotIt: "拍到了",
     skip: "跳过",
-    rewardTitle: "Memory collected ✦",
-    rewardBody: "又多了一段属于你的回忆。",
-    ok: "OK",
   },
   en: {
     eyebrow: "Memory Prompt",
     title: "Keep one small piece of today.",
-    note: "No faces required. The photo stays in your normal phone gallery, and myDate does not need an upload. Take it if you want, or skip it.",
+    note: "No faces required. Take the suggested photo if you want, or skip it; either way you can keep this Memory.",
     gotIt: "I got it",
     skip: "Skip",
-    rewardTitle: "Memory collected ✦",
-    rewardBody: "One more little memory is yours.",
-    ok: "OK",
   },
   ja: {
     eyebrow: "思い出のヒント",
     title: "今日の小さな痕跡を残そう。",
-    note: "顔は写さなくて大丈夫。写真はいつものスマホの写真フォルダに残るだけで、myDate へのアップロードは不要。撮っても、スキップしてもいい。",
+    note: "顔は写さなくて大丈夫。撮っても、スキップしても、この Memory はそのまま残せる。",
     gotIt: "撮れた",
     skip: "スキップ",
-    rewardTitle: "思い出をひとつ追加 ✦",
-    rewardBody: "またひとつ、自分の思い出が増えた。",
-    ok: "OK",
   },
 } as const;
 
@@ -80,26 +72,13 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
   const { user, loading, refresh } = useJournal();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<SaveError>(null);
-  const [savedId, setSavedId] = useState("");
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
-  const prompt = idea ? localizePhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
-  const [phase, setPhase] = useState<RewardPhase>("idle");
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [sourcePosition, setSourcePosition] = useState<RewardPoint | null>(null);
-  const [targetPosition, setTargetPosition] = useState<RewardPoint | null>(null);
-  const okButtonRef = useRef<HTMLButtonElement>(null);
-  const rewardFinishedRef = useRef(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
+  const prompt = idea
+    ? localizePhotoPrompt(idea, locale) ?? copy.genericPhoto
+    : copy.genericPhoto;
 
   async function resolvePrompt(completed: boolean) {
-    if (phase !== "idle" || saving) return;
+    if (saving) return;
     if (!memoryId) {
       router.push("/");
       return;
@@ -107,9 +86,13 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
 
     setSaving(true);
     setSaveError(null);
+
     try {
-      const adventure = loadSaveData().activeAdventures.find((item) => item.id === memoryId);
+      const adventure = loadSaveData().activeAdventures.find(
+        (item) => item.id === memoryId,
+      );
       if (!adventure) throw new Error("adventure_unavailable");
+
       const snapshot = adventure.activitySnapshot;
       const memory = await MemoryService.create(
         {
@@ -125,10 +108,10 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
         },
         `adventure:${adventure.id}`,
       );
-      setSavedId(memory.id);
+
       finishJournalAdventure(adventure.id);
       await refresh();
-      setPhase("modal");
+      router.push(`/memories/${memory.id}/create`);
     } catch (error) {
       setSaveError(isBackendUnavailable(error) ? "backend" : "generic");
     } finally {
@@ -136,43 +119,8 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
     }
   }
 
-  function playReward() {
-    if (phase !== "modal") return;
-
-    const sourceRect = okButtonRef.current?.getBoundingClientRect();
-    const target = document.querySelector<HTMLElement>("[data-memory-target]");
-    const targetRect = target?.getBoundingClientRect();
-
-    if (!sourceRect || !targetRect) {
-      rewardFinishedRef.current = true;
-      notifyMemoryReward(1);
-      setPhase("done");
-      return;
-    }
-
-    setSourcePosition({
-      x: sourceRect.left + sourceRect.width / 2,
-      y: sourceRect.top + sourceRect.height / 2,
-    });
-    setTargetPosition({
-      x: targetRect.left + targetRect.width / 2,
-      y: targetRect.top + targetRect.height / 2,
-    });
-    setPhase("animating");
-  }
-
-  const finishReward = useCallback(() => {
-    if (phase !== "animating" || rewardFinishedRef.current) return;
-
-    rewardFinishedRef.current = true;
-    setPhase("done");
-
-    window.setTimeout(() => {
-      notifyMemoryReward(1);
-    }, 0);
-  }, [phase]);
-
   if (loading) return <p>{journal.loading}</p>;
+
   if (!user) {
     return (
       <AccountPanel
@@ -189,8 +137,13 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
       <p className="eyebrow">{copy.dateComplete}</p>
       <h1 className="page-title">{localizedIdea?.title ?? copy.finishedDate}</h1>
 
-      <section className={`section ${styles.promptFocus}`} aria-labelledby="memory-prompt-title">
-        <div className={styles.promptIcon} aria-hidden="true">✦</div>
+      <section
+        className={`section ${styles.promptFocus}`}
+        aria-labelledby="memory-prompt-title"
+      >
+        <div className={styles.promptIcon} aria-hidden="true">
+          ✦
+        </div>
         <p className="eyebrow">{memoryCopy.eyebrow}</p>
         <h2 className="activity-title" id="memory-prompt-title">
           {memoryCopy.title}
@@ -199,73 +152,30 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
         <p className={styles.promptNote}>{memoryCopy.note}</p>
       </section>
 
-      {saveError && <p role="alert">{saveError === "backend" ? journal.backend : journal.failed}</p>}
-
-      {phase === "done" && (
-        <div className="action-stack">
-          <p>{journal.saved}</p>
-          <Link className="primary-button" href={`/memories/${savedId}`}>
-            {journal.enrich}
-          </Link>
-          <Link className="secondary-button" href="/">
-            {journal.done}
-          </Link>
-        </div>
+      {saveError && (
+        <p role="alert">
+          {saveError === "backend" ? journal.backend : journal.failed}
+        </p>
       )}
 
-      {phase === "idle" && (
-        <div className={`action-stack ${styles.actions}`}>
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() => resolvePrompt(true)}
-            disabled={saving}
-          >
-            {saving ? "…" : memoryCopy.gotIt}
-          </button>
-          <button
-            className="secondary-button"
-            type="button"
-            onClick={() => resolvePrompt(false)}
-            disabled={saving}
-          >
-            {memoryCopy.skip}
-          </button>
-        </div>
-      )}
-
-      {phase === "modal" ? (
-        <div className={styles.modalBackdrop} role="presentation">
-          <section
-            className={styles.modal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="memory-reward-title"
-          >
-            <div className={styles.modalSparkle} aria-hidden="true">
-              ✦
-            </div>
-            <h2 id="memory-reward-title">{memoryCopy.rewardTitle}</h2>
-            <p>{memoryCopy.rewardBody}</p>
-            <button
-              ref={okButtonRef}
-              className="primary-button"
-              type="button"
-              onClick={playReward}
-            >
-              {memoryCopy.ok}
-            </button>
-          </section>
-        </div>
-      ) : null}
-
-      <RewardBurst
-        active={phase === "animating"}
-        sourcePosition={sourcePosition}
-        targetPosition={targetPosition}
-        reducedMotion={reducedMotion}
-        onAnimationComplete={finishReward}
-      />
+      <div className={`action-stack ${styles.actions}`}>
+        <button
+          className="primary-button"
+          type="button"
+          onClick={() => resolvePrompt(true)}
+          disabled={saving}
+        >
+          {saving ? "…" : memoryCopy.gotIt}
+        </button>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={() => resolvePrompt(false)}
+          disabled={saving}
+        >
+          {memoryCopy.skip}
+        </button>
+      </div>
     </div>
   );
 }
