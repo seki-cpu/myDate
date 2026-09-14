@@ -3,12 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { DateIdea, MemoryRating } from "../../types/domain";
+import type { DateIdea } from "../../types/domain";
 import { finishJournalAdventure, loadSaveData } from "../../lib/storage";
 import { MemoryService } from "../../lib/services/memories";
 import { useJournal } from "../memory/JournalProvider";
 import { AccountPanel } from "../memory/AccountPanel";
-import { RatingFields } from "../memory/MemoryEditor";
 import { journalCopy } from "../memory/journalCopy";
 import { notifyMemoryReward } from "../memory/MemoryMiniCounter";
 import { flowCopy, localizeIdea, localizePhotoPrompt, useLocale } from "../ui/locale";
@@ -21,6 +20,7 @@ interface CompleteContentProps {
 }
 
 type RewardPhase = "idle" | "modal" | "animating" | "done";
+type SaveError = "backend" | "generic" | null;
 
 const memoryPromptCopy = {
   zh: {
@@ -55,6 +55,17 @@ const memoryPromptCopy = {
   },
 } as const;
 
+function isBackendUnavailable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: unknown; message?: unknown; status?: unknown };
+  if (candidate.code === "PGRST205" || candidate.status === 404) return true;
+  return (
+    typeof candidate.message === "string" &&
+    candidate.message.toLowerCase().includes("memories") &&
+    candidate.message.toLowerCase().includes("schema")
+  );
+}
+
 export function CompleteContent(props: CompleteContentProps) {
   const { user } = useJournal();
   return <CompleteSession key={user?.id ?? "guest"} {...props} />;
@@ -67,9 +78,8 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
   const memoryCopy = memoryPromptCopy[locale];
   const journal = journalCopy[locale];
   const { user, loading, refresh } = useJournal();
-  const [rating, setRating] = useState<MemoryRating>({});
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState(false);
+  const [saveError, setSaveError] = useState<SaveError>(null);
   const [savedId, setSavedId] = useState("");
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
   const prompt = idea ? localizePhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
@@ -95,21 +105,35 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
       return;
     }
 
-    setSaving(true); setSaveError(false);
+    setSaving(true);
+    setSaveError(null);
     try {
-      const adventure = loadSaveData().activeAdventures.find(item => item.id === memoryId);
+      const adventure = loadSaveData().activeAdventures.find((item) => item.id === memoryId);
       if (!adventure) throw new Error("adventure_unavailable");
       const snapshot = adventure.activitySnapshot;
-      const memory = await MemoryService.create({
-        activity_snapshot: { ...snapshot, title: snapshot.title ?? localizedIdea?.title ?? journal.legacy },
-        occurred_at: new Date().toISOString(), rating, moods: [], note: "", memory_prompt_completed: completed,
-      }, `adventure:${adventure.id}`);
+      const memory = await MemoryService.create(
+        {
+          activity_snapshot: {
+            ...snapshot,
+            title: snapshot.title ?? localizedIdea?.title ?? journal.legacy,
+          },
+          occurred_at: new Date().toISOString(),
+          rating: {},
+          moods: [],
+          note: "",
+          memory_prompt_completed: completed,
+        },
+        `adventure:${adventure.id}`,
+      );
       setSavedId(memory.id);
       finishJournalAdventure(adventure.id);
       await refresh();
       setPhase("modal");
-    } catch { setSaveError(true); }
-    finally { setSaving(false); }
+    } catch (error) {
+      setSaveError(isBackendUnavailable(error) ? "backend" : "generic");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function playReward() {
@@ -149,7 +173,16 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
   }, [phase]);
 
   if (loading) return <p>{journal.loading}</p>;
-  if (!user) return <AccountPanel returnTo={`/complete?${new URLSearchParams({ id: idea?.id ?? "", memoryId: memoryId ?? "" })}`} />;
+  if (!user) {
+    return (
+      <AccountPanel
+        returnTo={`/complete?${new URLSearchParams({
+          id: idea?.id ?? "",
+          memoryId: memoryId ?? "",
+        })}`}
+      />
+    );
+  }
 
   return (
     <div className={styles.shell}>
@@ -159,40 +192,67 @@ function CompleteSession({ idea, memoryId }: CompleteContentProps) {
       <section className={`section ${styles.promptFocus}`} aria-labelledby="memory-prompt-title">
         <div className={styles.promptIcon} aria-hidden="true">✦</div>
         <p className="eyebrow">{memoryCopy.eyebrow}</p>
-        <h2 className="activity-title" id="memory-prompt-title">{memoryCopy.title}</h2>
+        <h2 className="activity-title" id="memory-prompt-title">
+          {memoryCopy.title}
+        </h2>
         <p className={styles.promptText}>{prompt}</p>
         <p className={styles.promptNote}>{memoryCopy.note}</p>
       </section>
 
-      {phase === "idle" && <div className="journal-form journal-panel"><RatingFields rating={rating} setRating={setRating} /></div>}
-      {saveError && <p role="alert">{journal.failed}</p>}
-      {phase === "done" && <div className="action-stack"><p>{journal.saved}</p><Link className="primary-button" href={`/memories/${savedId}`}>{journal.enrich}</Link><Link className="secondary-button" href="/">{journal.done}</Link></div>}
-      {phase === "idle" && <div className={`action-stack ${styles.actions}`}>
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() => resolvePrompt(true)}
-          disabled={saving}
-        >
-          {saving ? "…" : memoryCopy.gotIt}
-        </button>
-        <button
-          className="secondary-button"
-          type="button"
-          onClick={() => resolvePrompt(false)}
-          disabled={saving}
-        >
-          {memoryCopy.skip}
-        </button>
-      </div>}
+      {saveError && <p role="alert">{saveError === "backend" ? journal.backend : journal.failed}</p>}
+
+      {phase === "done" && (
+        <div className="action-stack">
+          <p>{journal.saved}</p>
+          <Link className="primary-button" href={`/memories/${savedId}`}>
+            {journal.enrich}
+          </Link>
+          <Link className="secondary-button" href="/">
+            {journal.done}
+          </Link>
+        </div>
+      )}
+
+      {phase === "idle" && (
+        <div className={`action-stack ${styles.actions}`}>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => resolvePrompt(true)}
+            disabled={saving}
+          >
+            {saving ? "…" : memoryCopy.gotIt}
+          </button>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() => resolvePrompt(false)}
+            disabled={saving}
+          >
+            {memoryCopy.skip}
+          </button>
+        </div>
+      )}
 
       {phase === "modal" ? (
         <div className={styles.modalBackdrop} role="presentation">
-          <section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="memory-reward-title">
-            <div className={styles.modalSparkle} aria-hidden="true">✦</div>
+          <section
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="memory-reward-title"
+          >
+            <div className={styles.modalSparkle} aria-hidden="true">
+              ✦
+            </div>
             <h2 id="memory-reward-title">{memoryCopy.rewardTitle}</h2>
             <p>{memoryCopy.rewardBody}</p>
-            <button ref={okButtonRef} className="primary-button" type="button" onClick={playReward}>
+            <button
+              ref={okButtonRef}
+              className="primary-button"
+              type="button"
+              onClick={playReward}
+            >
               {memoryCopy.ok}
             </button>
           </section>
