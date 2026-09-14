@@ -1,49 +1,9 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import type {
-  JournalInput,
-  JournalMemory,
-  MemoryRating,
-  RatingScore,
-} from "../../types/domain";
+import type { JournalInput, JournalMemory } from "../../types/domain";
 import { dateIdeas } from "../../data/dateIdeas";
 import { localizeIdea, useLocale } from "../ui/locale";
 import { journalCopy } from "./journalCopy";
-
-export function RatingFields({
-  rating,
-  setRating,
-}: {
-  rating: MemoryRating;
-  setRating: (value: MemoryRating) => void;
-}) {
-  const t = journalCopy[useLocale()];
-  return (
-    <div className="journal-rating-grid">
-      {(["overall", "fun", "comfort", "doAgain"] as const).map((key) => (
-        <label key={key}>
-          {t[key]}
-          <select
-            value={rating[key] ?? ""}
-            onChange={(event) => {
-              const next = { ...rating };
-              if (!event.target.value) delete next[key];
-              else next[key] = Number(event.target.value) as RatingScore;
-              setRating(next);
-            }}
-          >
-            <option value="">{t.unrated}</option>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {"★".repeat(n)}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
-    </div>
-  );
-}
 
 export function MemoryEditor({
   memory,
@@ -65,15 +25,16 @@ export function MemoryEditor({
   const [moods, setMoods] = useState<string[]>(memory?.moods ?? []);
   const [mood, setMood] = useState("");
   const [note, setNote] = useState(memory?.note ?? "");
-  const [rating, setRating] = useState<MemoryRating>(memory?.rating ?? {});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+
   function addMood(value: string) {
     if (value.trim() && !moods.includes(value) && moods.length < 30) {
       setMoods([...moods, value]);
       setMood("");
     }
   }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -81,7 +42,7 @@ export function MemoryEditor({
     try {
       const idea =
         mode === "activity"
-          ? dateIdeas.find((i) => i.id === activityId)
+          ? dateIdeas.find((item) => item.id === activityId)
           : undefined;
       const localized = idea ? localizeIdea(idea, locale) : undefined;
       const snapshot =
@@ -94,6 +55,7 @@ export function MemoryEditor({
               memoryPrompt: localized.photoPrompt,
             }
           : { title });
+
       await save({
         activity_snapshot: snapshot,
         occurred_at:
@@ -102,7 +64,7 @@ export function MemoryEditor({
             : new Date(`${date}T12:00:00`).toISOString(),
         moods,
         note,
-        rating,
+        rating: memory?.rating ?? {},
         memory_prompt_completed: memory?.memory_prompt_completed ?? false,
       });
     } catch {
@@ -111,6 +73,7 @@ export function MemoryEditor({
       setBusy(false);
     }
   }
+
   return (
     <form className="journal-panel journal-form" onSubmit={submit}>
       <p>{t.optional}</p>
@@ -118,7 +81,7 @@ export function MemoryEditor({
         <>
           <label>
             {t.add}
-            <select value={mode} onChange={(e) => setMode(e.target.value)}>
+            <select value={mode} onChange={(event) => setMode(event.target.value)}>
               <option value="freeform">{t.freeform}</option>
               <option value="activity">{t.activity}</option>
             </select>
@@ -129,7 +92,7 @@ export function MemoryEditor({
               <select
                 required
                 value={activityId}
-                onChange={(e) => setActivityId(e.target.value)}
+                onChange={(event) => setActivityId(event.target.value)}
               >
                 <option value="">{t.selected}</option>
                 {dateIdeas.map((idea) => (
@@ -146,31 +109,32 @@ export function MemoryEditor({
                 required
                 maxLength={300}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(event) => setTitle(event.target.value)}
               />
             </label>
           )}
         </>
       )}
+
       <label>
         {t.date}
         <input
           type="date"
           required
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={(event) => setDate(event.target.value)}
         />
       </label>
-      <RatingFields rating={rating} setRating={setRating} />
+
       <fieldset>
         <legend>{t.moods}</legend>
         <div className="journal-chips">
-          {moods.map((value, i) => (
+          {moods.map((value, index) => (
             <button
               type="button"
-              key={i}
+              key={index}
               aria-label={`${t.removeMood}: ${value}`}
-              onClick={() => setMoods(moods.filter((_, j) => i !== j))}
+              onClick={() => setMoods(moods.filter((_, itemIndex) => itemIndex !== index))}
             >
               {value} ×
             </button>
@@ -193,10 +157,10 @@ export function MemoryEditor({
             aria-label={t.addMood}
             maxLength={300}
             value={mood}
-            onChange={(e) => setMood(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
+            onChange={(event) => setMood(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
                 addMood(mood);
               }
             }}
@@ -210,6 +174,7 @@ export function MemoryEditor({
           </button>
         </div>
       </fieldset>
+
       <label>
         {t.note}
         <textarea
@@ -217,9 +182,10 @@ export function MemoryEditor({
           maxLength={20000}
           placeholder={t.noteHint}
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(event) => setNote(event.target.value)}
         />
       </label>
+
       {error && <p role="alert">{t.failed}</p>}
       <button
         className="primary-button"
