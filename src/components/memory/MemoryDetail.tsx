@@ -69,7 +69,6 @@ function Detail({ id }: { id: string }) {
           save={async (input) => {
             await MemoryService.update(id, {
               occurred_at: input.occurred_at,
-              rating: input.rating,
               moods: input.moods,
               note: input.note,
               memory_prompt_completed: input.memory_prompt_completed,
@@ -89,16 +88,6 @@ function Detail({ id }: { id: string }) {
               <span key={i}>{mood}</span>
             ))}
           </div>
-          <dl className="journal-rating-grid">
-            {(["overall", "fun", "comfort", "doAgain"] as const).map((key) =>
-              memory.rating[key] ? (
-                <div key={key}>
-                  <dt>{t[key]}</dt>
-                  <dd>{"★".repeat(memory.rating[key]!)}</dd>
-                </div>
-              ) : null,
-            )}
-          </dl>
           <h2>{t.note}</h2>
           <p className="journal-note">{memory.note || "—"}</p>
           {memory.activity_snapshot.memoryPrompt && (
