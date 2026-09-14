@@ -265,8 +265,8 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    max-width: 620px;
-    margin-top: 28px;
+    width: min(100%, 620px);
+    margin: 28px auto 0;
   }
 
   .result-actions .action-stack,
@@ -283,6 +283,7 @@
 
   .app-shell-focused .action-stack:not(.discover-actions):not(.result-secondary-action) {
     max-width: 620px;
+    margin-inline: auto;
   }
 
   .app-shell-focused .empty-card {
