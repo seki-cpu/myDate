@@ -12,7 +12,7 @@ export default async function ResultPage({ searchParams }: ResultPageProps) {
 
   if (params?.mode === "random") {
     return (
-      <MobileShell backHref="/">
+      <MobileShell backHref="/" variant="focused">
         <RandomResultContent ideas={dateIdeas} />
       </MobileShell>
     );
@@ -21,7 +21,7 @@ export default async function ResultPage({ searchParams }: ResultPageProps) {
   const idea = dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
-    <MobileShell backHref="/">
+    <MobileShell backHref="/" variant="focused">
       <ResultContent idea={idea} />
     </MobileShell>
   );
