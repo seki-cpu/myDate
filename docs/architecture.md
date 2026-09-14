@@ -1,12 +1,10 @@
-# myDate V2/V3 Architecture — Memory First
-
-> V3 journal update: `myDate_V3_Memory_Journal.md` and `v3-setup.md` supersede the local-only/no-auth/no-photo restrictions below. The existing discovery and activity identity invariants remain in force.
+# myDate V3 Architecture — Memory Journal
 
 ## Product Statement
 
 > People may change. The memories are still yours.
 
-The permanent subject of myDate is the user. Dating partners and relationships may change over time, while completed experiences remain user-owned memories.
+The permanent subject of myDate is the user. Completed experiences become user-owned Memories that may later be enriched with journal text and photos.
 
 ## Product Principles
 
@@ -14,57 +12,23 @@ The permanent subject of myDate is the user. Dating partners and relationships m
 2. Memory Second.
 3. User-owned experiences.
 4. No relationship KPI.
-5. No relationship success/failure state.
-6. Backend-free.
-7. No accounts.
-8. No Solo mode yet.
-9. Keep the product minimal.
-10. Do not add abstractions for hypothetical future features.
+5. No ratings or score-based Memory creation UI.
+6. Journal text and photos are optional.
+7. A blank Memory is valid.
+8. Memory identity never depends on title.
+9. Keep the creation flow calm and minimal.
+10. Do not add abstractions that are not needed by the current product.
 
-## Stack
+## Current Persistence Model
 
-- Next.js App Router
-- React
-- TypeScript
-- Tailwind CSS
-- localStorage only
-- no backend
-- no user accounts
-- no image upload or image database
-- Vercel for preview and production deployment
+V3 uses:
 
-## Layering
+- browser-local state for discovery rounds and unfinished Adventures
+- Supabase Auth for the private journal account
+- Supabase Postgres for Memory metadata
+- Supabase Storage for private Memory photos
 
-```text
-UI / routes
-   ↓
-shared domain types
-   ↓
-content source + local persistence adapter
-```
-
-UI must not redefine domain models or access localStorage directly.
-
-## Canonical DateIdea Contract
-
-`DateIdea` remains the single built-in activity-content contract.
-
-```ts
-interface DateIdea {
-  id: string;
-  title: LocalizedText;
-  description: LocalizedText;
-  littleMission?: LocalizedText;
-  photoPrompt: LocalizedText;
-  categories: DateCategory[];
-  cost: DateCost;
-  duration: DateDuration;
-  indoor: boolean;
-  tags: string[];
-}
-```
-
-`photoPrompt` remains the localized Memory Prompt. myDate does not upload, store, or verify photos.
+The current backend shape is already implemented in this branch. This change does not introduce a new backend architecture.
 
 ## Stable Activity Identity
 
@@ -79,270 +43,176 @@ interface ActivityIdentity {
 }
 ```
 
-Built-in activities use their stable `DateIdea.id` with `source: "builtin"`.
-
-User-created activities use a generated stable id with `source: "custom"`. Editing a custom activity may change its title or content but must not change this id. Deleting the custom activity removes the editable activity definition only; existing Memories remain intact.
+Built-in activities use `DateIdea.id` with `source: "builtin"`. Custom activities use their own generated stable id.
 
 ## Activity Snapshot
 
-Every Adventure and Memory carries a small presentation snapshot:
+Adventure completion persists an immutable activity snapshot with the Memory. Identity remains authoritative for historical matching; snapshot text is presentation/history data.
 
-```ts
-interface ActivitySnapshot {
-  identity: ActivityIdentity;
-  title?: string;
-}
-```
+Editing or deleting the current source activity must not rewrite or delete an existing Memory snapshot.
 
-`identity` is authoritative for historical matching. `title` is only a presentation fallback so an old Memory can still render after the source activity is renamed or deleted.
-
-Do not match historical state using `activitySnapshot.title`.
-
-## Canonical Memory Contract
-
-Memory is the primary completed-experience domain object.
-
-```ts
-type RatingScore = 1 | 2 | 3 | 4 | 5;
-
-interface MemoryRating {
-  overall?: RatingScore;
-  fun?: RatingScore;
-  comfort?: RatingScore;
-  doAgain?: RatingScore;
-}
-
-interface Memory {
-  id: string;
-  activitySnapshot: ActivitySnapshot;
-  completedAt: string;
-  memoryPromptCompleted: boolean;
-  rating?: MemoryRating;
-}
-```
-
-`overall` preserves the V1 single-score rating without inventing values for new dimensions.
-
-Partner identity, relationship state, XP, Egg progress, hatch state, and photo references are intentionally absent from Memory.
-
-## Adventure Session Contract
-
-An in-progress activity uses:
-
-```ts
-interface AdventureSession {
-  id: string;
-  activitySnapshot: ActivitySnapshot;
-  startedAt: string;
-}
-```
-
-A completed Adventure creates exactly one Memory with the same id:
-
-```text
-AdventureSession.id === Memory.id
-```
-
-This is the completion idempotency key.
-
-## Canonical Flow
+## Canonical Memory Creation Flow
 
 ```text
 Discover Date Idea
 → Let's do it
 → Adventure
 → Adventure Complete
-→ Memory created
 → Memory Prompt
 → I got it / Skip
-→ Experience Rating
-→ Memory Reward Animation
-→ +1 Memory
-→ Memories
+→ Memory row created idempotently
+→ Create Memory
+   → optional journal text
+   → optional photos
+→ Save Memory
+→ Memory detail
 ```
 
-Business truth and presentation timing are intentionally different:
+The Memory Prompt is optional:
 
-- Memory is persisted at Adventure Complete.
-- `I got it` only changes `memoryPromptCompleted` to `true`.
-- `Skip` leaves it `false`.
-- Rating updates the existing Memory.
-- The final `+1 Memory` animation acknowledges the already-persisted Memory.
+```text
+I got it → memory_prompt_completed = true
+Skip     → memory_prompt_completed = false
+```
+
+Both paths create the same kind of Memory and continue to Create Memory.
+
+## Creation Boundary
+
+The server Memory already exists before the Create Memory UI opens.
+
+Adventure completion uses one stable source key:
+
+```text
+adventure:<adventureId>
+```
+
+The database enforces uniqueness per user/source key. Replaying completion therefore resolves to the existing Memory rather than inserting a duplicate.
+
+The Create Memory page must update/enrich that existing row. It must never create a second Memory for the same completion event.
+
+## Journal Field
+
+The canonical freeform journal field is:
+
+```text
+memories.note
+```
+
+Rules:
+
+- empty string is valid
+- no required validation beyond existing storage limits
+- creation placeholder:
+  - EN: `Write something you want to remember about today…`
+  - ZH: `写一点今天想记住的东西……`
+  - JA: `今日のことを少し残してみよう…`
+- Save Memory remains enabled when the note is empty
+- Memory detail/edit may update the note later
+
+## Photo Attachment Flow
+
+Photos belong to the same Memory creation/editing experience.
+
+Canonical flow:
+
+```text
+Memory row
+→ memory_images reservation
+→ private Storage upload
+→ ready image metadata
+```
+
+The existing `PhotoJournal` / `StorageService` path is canonical for V3.
+
+Rules:
+
+- photos are optional
+- zero photos is valid
+- users may add photos during Create Memory
+- uploaded photos are previewed in the same creation surface
+- users may remove photos before finishing creation
+- Memory detail continues to support add/remove/view later
+- deleting a photo must never delete the Memory row
+- Activity Snapshot must never change because photos changed
+
+## Moods
+
+Moods remain supported as optional journal metadata in the current architecture.
+
+They are not required on the Create Memory page. They may remain available in later Memory edit flows.
+
+A Memory with no moods remains valid.
+
+## Legacy Rating Compatibility
+
+Legacy rating data may remain in shared domain/database structures for backward compatibility and migration.
+
+V3 UI rules:
+
+- do not render rating controls
+- do not display rating as part of the creation/editing experience
+- do not require rating
+- do not create new rating values
+- do not use rating to determine whether a Memory can save
+- preserve legacy values without fabricating new ones
+
+No replacement scoring system may be introduced.
 
 ## Historical Tried vs Current Discovery Round
 
-These are two separate concepts and must never share one boolean.
-
-### Historical Tried
-
-Historical state is derived from Memories:
+Historical Tried is derived from Memory history and stable Activity Identity.
 
 ```text
 hasTried(activity)
 =
-exists Memory where
-memory.activitySnapshot.identity == activity.identity
+exists Memory whose Activity Snapshot identity matches activity identity
 ```
 
-Canonical helper behavior:
+Current discovery-round completion is separate resettable state used only by random discovery.
 
-```ts
-hasTriedActivity(identity)
-getTriedCount(identity)
-```
+Starting a new discovery round resets current-round exclusion and does not remove historical Tried.
 
-`hasTriedActivity` is the V3 UI requirement. `getTriedCount` is provided so future `Tried 2 times` UI does not require a data migration, but repetition count display is not required now.
+## Save / Update Idempotency
 
-Starting a new discovery round never changes historical Tried state.
-
-Recommended labels:
-
-- English: `Tried`
-- Chinese: `做过`
-- Japanese: `体験済み`
-
-Avoid `Completed`, because an activity may be repeated in future rounds.
-
-### Current Discovery Round
-
-The random discovery algorithm uses resettable state:
-
-```ts
-interface DiscoveryRound {
-  completedActivityKeys: string[];
-}
-```
-
-The key is generated from stable identity, not title.
-
-Completing an Adventure adds its activity key to the current round once. Starting a new round clears only this array.
+Creation idempotency is based on the Adventure source key.
 
 ```text
-complete Adventure
-→ Memory persists forever
-→ Tried becomes true forever
-→ excluded from current random round
-
-Start a new round
-→ current-round exclusion resets
-→ Tried remains true
-→ activity becomes random-eligible again
+same Adventure completion
+→ same source key
+→ existing Memory returned
+→ no duplicate Memory
 ```
 
-This applies identically to built-in and custom activities.
+Create Memory uses update semantics for journal text. Photo rows have their own database/storage identities and may be added or removed independently.
 
-## Memory Prompt Semantics
+Repeated Save Memory actions update the same Memory row.
 
-Memory Prompt completion is trust-based.
+## Memory Detail / Edit
 
-```text
-I got it → memoryPromptCompleted = true
-Skip     → memoryPromptCompleted remains false
-```
+Memory detail/edit must support at minimum:
 
-Skipping never prevents Memory creation. Once true, the flag is not downgraded by repeated navigation.
+- edit journal text
+- add photos
+- remove photos
+- view existing photos
+- preserve Memory metadata
+- preserve Activity Snapshot
 
-## Rating Semantics
-
-Rating belongs to the Memory, not to a relationship and not to a reward settlement event.
-
-Legacy single rating migrates to `rating.overall`. Do not infer `fun`, `comfort`, or `doAgain` from it.
-
-## Reward Animation Contract
-
-The existing pale-yellow / champagne-gold reward animation is preserved and repurposed.
-
-```text
-stars → Memories icon / Memory counter → +1 Memory
-```
-
-Recommended presentation state:
-
-```text
-idle
-→ memoryRewardModalOpen
-→ memoryRewardAnimationPlaying
-→ memoryRewardAnimationComplete
-```
-
-These states are view-only and never persisted. The animation targets the real shared Memories counter derived from `memories.length`. Animation completion must not mutate Memory state.
-
-## Persistence Boundary
-
-All persistence goes through `src/lib/storage.ts`.
-
-Canonical storage:
-
-```text
-key: mydate.save.v3
-SaveData.version = 3
-```
-
-```ts
-interface SaveData {
-  version: 3;
-  savedDateIds: string[];
-  activeAdventures: AdventureSession[];
-  memories: Memory[];
-  discoveryRound: DiscoveryRound;
-}
-```
-
-There is no XP, Egg, hatch, relationship progress, photo URL, or image data in SaveData.
-
-Historical Tried is not persisted as a separate boolean. It is always derived from `memories`.
-
-## V1 → Current Migration
-
-When no valid current save exists, valid completed V1 adventures migrate one-to-one into Memories.
-
-Legacy built-in ids become:
-
-```ts
-activitySnapshot.identity = {
-  source: "builtin",
-  id: legacyDateId,
-};
-```
-
-Legacy migration initializes `discoveryRound.completedActivityKeys` as empty. Historical Memories therefore immediately show Tried, while upgraded users begin with a fresh random-discovery round.
-
-Migration rules:
-
-- Memory count comes from completed experiences, never XP.
-- Invalid legacy records are skipped rather than crashing.
-- Legacy XP/Egg state is ignored.
-- Legacy rating maps only to `rating.overall`.
-- Migration does not infer current-round exclusions from historical Memories.
-
-## Removed Concepts
-
-The following must not remain in business state:
-
-- XP and XP settlement
-- XP delta badge
-- Egg system / customization / progress
-- hatch system / hatchGoal / isHatched
-- eggColor
-- petName
-- relationship progression
-- love progression
+Deleting or editing photos does not delete the Memory itself.
 
 ## Scope Protection
 
-Do not add:
+Do not add as part of this change:
 
-- backend APIs
-- accounts
-- cloud sync
-- photo upload/storage
-- relationship identity models
-- partner profiles
+- ratings or replacement score systems
+- XP
+- Egg
+- relationship progression
+- relationship mode selector
 - Solo mode
-- replacement gamification currency
-- a second Memory contract
-- a separate `tried` boolean
-- title-based historical matching
-- persisted animation state
+- title-based Memory identity
+- a second Memory persistence path
+- another backend architecture
 
-The architecture is correct when activity completion reliably creates user-owned Memories, current-round random exclusion resets independently, and historical Tried remains stable through refresh, new rounds, custom edits, and custom deletion.
+The architecture is correct when `I got it` and `Skip` both lead to one idempotent Memory, Create Memory can save with no note and no photos, later edits preserve identity/snapshot, and no rating UI is exposed.
