@@ -73,17 +73,19 @@ export function ResultContent({ idea }: ResultContentProps) {
         </div>
       </section>
 
-      <div className="action-stack">
-        <Link className="secondary-button" href="/result?mode=random">
-          {copy.another}
-        </Link>
-      </div>
+      <div className="result-actions">
+        <div className="action-stack result-secondary-action">
+          <Link className="secondary-button" href="/result?mode=random">
+            {copy.another}
+          </Link>
+        </div>
 
-      <div className="bottom-action">
-        <div className="bottom-action-inner">
-          <button className="primary-button" type="button" disabled={starting} onClick={beginAdventure}>
-            {starting ? "…" : copy.start}
-          </button>
+        <div className="bottom-action">
+          <div className="bottom-action-inner">
+            <button className="primary-button" type="button" disabled={starting} onClick={beginAdventure}>
+              {starting ? "…" : copy.start}
+            </button>
+          </div>
         </div>
       </div>
     </>
