@@ -331,11 +331,18 @@
   }
 
   .journal-actions {
-    width: min(100%, 320px);
-    margin: 28px 0 0 auto;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 760px);
+    gap: 28px;
+    width: min(100%, 1000px);
+    max-width: 1000px;
+    margin: 28px 0 0;
   }
 
   .journal-actions .primary-button {
+    grid-column: 2;
+    justify-self: end;
+    width: 320px;
     min-height: 50px;
   }
 
