@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../styles/globals.css";
 import "../styles/responsive.css";
 import "../styles/journal.css";
+import "../styles/account-menu.css";
 import { JournalProvider } from "../components/memory/JournalProvider";
 
 export const metadata: Metadata = {
