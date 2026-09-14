@@ -1,0 +1,356 @@
+.desktop-header {
+  display: none;
+}
+
+.app-content,
+.activity-card,
+.memory-card,
+.memory-content,
+.result-hero {
+  min-width: 0;
+}
+
+.memory-list {
+  display: grid;
+  gap: 12px;
+}
+
+.memory-journal-row {
+  min-width: 0;
+}
+
+.memory-date {
+  display: block;
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.journal-actions {
+  max-width: 320px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .activity-card,
+  .primary-button,
+  .secondary-button,
+  .refresh-ideas-button,
+  .desktop-nav-link,
+  .desktop-back-link,
+  .icon-link,
+  .section-link {
+    transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, background 150ms ease, color 150ms ease;
+  }
+
+  .activity-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(184, 148, 82, 0.32);
+    box-shadow: 0 16px 36px rgba(56, 43, 22, 0.1);
+  }
+
+  .primary-button:hover,
+  .secondary-button:hover,
+  .refresh-ideas-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .desktop-nav-link:hover,
+  .desktop-back-link:hover,
+  .section-link:hover {
+    color: var(--text);
+  }
+}
+
+.activity-card:focus-visible,
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.refresh-ideas-button:focus-visible,
+.desktop-nav-link:focus-visible,
+.desktop-back-link:focus-visible,
+.icon-link:focus-visible,
+.section-link:focus-visible,
+.language-trigger:focus-visible,
+.language-option:focus-visible {
+  outline: 3px solid rgba(184, 148, 82, 0.28);
+  outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .app-shell-wide {
+    max-width: 920px;
+    padding-inline: 28px;
+  }
+
+  .app-shell-focused,
+  .app-shell-default {
+    max-width: 800px;
+    padding-inline: 28px;
+  }
+
+  .activity-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .activity-card {
+    height: 100%;
+    padding: 20px;
+  }
+
+  .discover-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .memory-empty-card {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell,
+  .app-shell-wide,
+  .app-shell-focused,
+  .app-shell-default {
+    width: min(100%, 1280px);
+    max-width: 1280px;
+    min-height: 100vh;
+    padding: 0 40px 64px;
+  }
+
+  .mobile-topbar {
+    display: none;
+  }
+
+  .desktop-header {
+    display: block;
+    margin-bottom: 54px;
+    border-bottom: 1px solid rgba(236, 230, 221, 0.8);
+  }
+
+  .desktop-header-inner {
+    display: flex;
+    min-height: 76px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+  }
+
+  .desktop-header-start,
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+  }
+
+  .desktop-header-start {
+    gap: 42px;
+  }
+
+  .desktop-nav {
+    gap: 8px;
+  }
+
+  .desktop-nav-link,
+  .desktop-back-link {
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 680;
+  }
+
+  .desktop-nav-link {
+    padding: 10px 14px;
+  }
+
+  .desktop-back-link {
+    padding: 9px 12px;
+  }
+
+  .app-shell-focused .app-content,
+  .app-shell-default .app-content {
+    width: min(100%, 800px);
+    margin-inline: auto;
+  }
+
+  .app-shell-wide .app-content {
+    width: 100%;
+  }
+
+  .discover-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+    gap: 64px;
+    align-items: end;
+    padding: 18px 0 12px;
+  }
+
+  .discover-hero-copy {
+    max-width: 720px;
+  }
+
+  .hero-title {
+    max-width: 720px;
+    font-size: clamp(48px, 5vw, 68px);
+    line-height: 0.98;
+  }
+
+  .hero-copy {
+    max-width: 620px;
+    font-size: 16px;
+  }
+
+  .discover-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .discover-actions .primary-button,
+  .discover-actions .secondary-button {
+    min-height: 50px;
+  }
+
+  .section {
+    margin-top: 46px;
+  }
+
+  .section-heading {
+    margin-bottom: 18px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .activity-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .activity-card {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .activity-title {
+    font-size: 21px;
+  }
+
+  .refresh-ideas-button {
+    width: auto;
+    min-width: 220px;
+    margin: 18px auto 0;
+    padding-inline: 22px;
+  }
+
+  .bottom-action {
+    position: static;
+    margin-top: 28px;
+    padding: 0;
+    background: none;
+  }
+
+  .bottom-action-inner {
+    max-width: none;
+  }
+
+  .bottom-action .primary-button {
+    width: auto;
+    min-width: 200px;
+    margin-left: auto;
+  }
+
+  .app-shell-focused .action-stack:not(.discover-actions) {
+    max-width: 420px;
+  }
+
+  .app-shell-focused .empty-card {
+    max-width: 640px;
+    margin-inline: auto;
+    padding: 34px;
+    text-align: center;
+  }
+
+  .app-shell-focused .empty-card .action-stack {
+    margin-inline: auto;
+  }
+
+  .result-hero {
+    padding: 34px 32px 30px;
+  }
+
+  .journal-heading {
+    max-width: 760px;
+  }
+
+  .journal-section {
+    max-width: 1000px;
+  }
+
+  .memory-list {
+    gap: 18px;
+  }
+
+  .memory-journal-row {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 760px);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .memory-date {
+    margin: 20px 0 0;
+    text-align: right;
+    font-size: 13px;
+  }
+
+  .memory-card {
+    padding: 24px;
+  }
+
+  .journal-actions {
+    margin-left: 178px;
+  }
+
+  .journal-actions .primary-button {
+    min-height: 50px;
+  }
+
+  .language-popover {
+    width: 250px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .app-shell,
+  .app-shell-wide,
+  .app-shell-focused,
+  .app-shell-default {
+    padding-inline: 44px;
+  }
+
+  .desktop-header {
+    margin-bottom: 60px;
+  }
+
+  .discover-hero {
+    gap: 84px;
+  }
+
+  .activity-list {
+    gap: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-card,
+  .primary-button,
+  .secondary-button,
+  .refresh-ideas-button,
+  .desktop-nav-link,
+  .desktop-back-link,
+  .section-link {
+    transition: none;
+  }
+}
