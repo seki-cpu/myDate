@@ -1,0 +1,119 @@
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  color: var(--text);
+}
+
+.user-menu-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 70;
+  display: grid;
+  width: 176px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 16px 40px rgba(56, 43, 22, 0.12);
+}
+
+.user-menu-item {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-menu-item:hover,
+.user-menu-item:focus-visible {
+  background: var(--gold-wash);
+}
+
+.user-menu-item:focus-visible,
+.user-menu-trigger:focus-visible,
+.settings-option:focus-visible {
+  outline: 3px solid rgba(184, 148, 82, 0.28);
+  outline-offset: 2px;
+}
+
+.user-menu-icon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--gold);
+}
+
+.journal-signed-out {
+  max-width: 640px;
+}
+
+.journal-kicker {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.journal-helper {
+  margin: 6px 0 0;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.settings-heading {
+  max-width: 680px;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 20px;
+  max-width: 680px;
+}
+
+.settings-panel h2 {
+  margin-bottom: 0;
+}
+
+.settings-options {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-option {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-option.is-active {
+  border-color: rgba(184, 148, 82, 0.42);
+  background: var(--gold-wash);
+  color: var(--gold);
+}
+
+@media (max-width: 600px) {
+  .user-menu-popover {
+    width: 164px;
+  }
+}
