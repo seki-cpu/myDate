@@ -11,7 +11,7 @@ export default async function CompletePage({ searchParams }: CompletePageProps) 
   const idea = dateIdeas.find((item) => item.id === params?.id) ?? dateIdeas[0];
 
   return (
-    <MobileShell backHref="/">
+    <MobileShell backHref="/" variant="focused">
       <CompleteContent idea={idea} memoryId={params?.memoryId} />
     </MobileShell>
   );

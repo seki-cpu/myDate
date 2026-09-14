@@ -61,6 +61,7 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
   const [sourcePosition, setSourcePosition] = useState<RewardPoint | null>(null);
   const [targetPosition, setTargetPosition] = useState<RewardPoint | null>(null);
   const okButtonRef = useRef<HTMLButtonElement>(null);
+  const rewardFinishedRef = useRef(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -89,6 +90,7 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
     const targetRect = target?.getBoundingClientRect();
 
     if (!sourceRect || !targetRect) {
+      rewardFinishedRef.current = true;
       notifyMemoryReward(1);
       setPhase("done");
       window.setTimeout(() => router.push("/"), reducedMotion ? 500 : 1100);
@@ -107,13 +109,16 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
   }
 
   const finishReward = useCallback(() => {
-    setPhase((current) => {
-      if (current !== "animating") return current;
+    if (phase !== "animating" || rewardFinishedRef.current) return;
+
+    rewardFinishedRef.current = true;
+    setPhase("done");
+
+    window.setTimeout(() => {
       notifyMemoryReward(1);
       window.setTimeout(() => router.push("/"), reducedMotion ? 500 : 1100);
-      return "done";
-    });
-  }, [reducedMotion, router]);
+    }, 0);
+  }, [phase, reducedMotion, router]);
 
   return (
     <div className={styles.shell}>

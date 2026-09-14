@@ -75,6 +75,30 @@ export function localizePhotoPrompt(idea: DateIdea, locale: Locale): string | un
   return idea.photoPrompt ? pickLocalizedText(idea.photoPrompt, locale) : undefined;
 }
 
+export const shellCopy = {
+  zh: {
+    discover: "探索",
+    memories: "回忆",
+    back: "返回",
+    primaryNavigation: "主导航",
+    goBack: "返回",
+  },
+  en: {
+    discover: "Discover",
+    memories: "Memories",
+    back: "Back",
+    primaryNavigation: "Primary navigation",
+    goBack: "Go back",
+  },
+  ja: {
+    discover: "探す",
+    memories: "思い出",
+    back: "戻る",
+    primaryNavigation: "メインナビゲーション",
+    goBack: "戻る",
+  },
+} as const;
+
 export const uiCopy = {
   zh: {
     eyebrow: "属于你们两个人",

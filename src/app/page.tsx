@@ -11,13 +11,15 @@ export default function HomePage() {
   const copy = uiCopy[locale];
 
   return (
-    <MobileShell>
-      <section>
-        <p className="eyebrow">{copy.eyebrow}</p>
-        <h1 className="hero-title">{copy.heroTitle}</h1>
-        <p className="hero-copy">{copy.heroCopy}</p>
+    <MobileShell variant="wide">
+      <section className="discover-hero">
+        <div className="discover-hero-copy">
+          <p className="eyebrow">{copy.eyebrow}</p>
+          <h1 className="hero-title">{copy.heroTitle}</h1>
+          <p className="hero-copy">{copy.heroCopy}</p>
+        </div>
 
-        <div className="action-stack">
+        <div className="action-stack discover-actions">
           <Link className="primary-button" href="/result?mode=random">
             {copy.random}
           </Link>

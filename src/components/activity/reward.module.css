@@ -19,4 +19,38 @@
 @keyframes star-travel { 0%{opacity:0;transform:translate3d(0,0,0) scale(.7) rotate(0deg)} 18%{opacity:.95} 100%{opacity:0;transform:translate3d(var(--reward-x),var(--reward-y),0) scale(.5) rotate(120deg)} }
 @keyframes star-fade { 0%{opacity:0;transform:scale(.8)} 45%{opacity:.85;transform:scale(1)} 100%{opacity:0;transform:scale(.9)} }
 @keyframes modal-in { from{opacity:0;transform:translateY(10px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+@media (min-width: 1024px) {
+  .promptFocus {
+    padding: 32px 30px 30px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 620px;
+    margin-inline: auto;
+    gap: 12px;
+  }
+
+  .modalBackdrop {
+    place-items: center;
+    padding: 40px;
+  }
+
+  .modal {
+    width: min(100%, 560px);
+    padding: 32px;
+    border-radius: 28px;
+  }
+
+  .modal h2 {
+    font-size: 28px;
+  }
+
+  .modal p {
+    margin-bottom: 26px;
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) { .modal { animation:none; } }
