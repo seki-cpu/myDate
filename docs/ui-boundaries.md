@@ -1,5 +1,7 @@
 # myDate V2/V3 Ownership Boundaries — Memory First
 
+> V3 journal update: `myDate_V3_Memory_Journal.md` supersedes the historical prohibition on photos and backend access below. UI uses AuthService, MemoryService, and StorageService; ownership is enforced with Supabase RLS. See `v3-setup.md` for the current QA matrix.
+
 ## Product Priority
 
 The UI must preserve this order:

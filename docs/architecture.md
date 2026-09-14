@@ -1,5 +1,7 @@
 # myDate V2/V3 Architecture — Memory First
 
+> V3 journal update: `myDate_V3_Memory_Journal.md` and `v3-setup.md` supersede the local-only/no-auth/no-photo restrictions below. The existing discovery and activity identity invariants remain in force.
+
 ## Product Statement
 
 > People may change. The memories are still yours.

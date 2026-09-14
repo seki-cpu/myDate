@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { ActivityIdentity } from "../../types/domain";
-import { hasTriedActivity } from "../../lib/storage";
+import { useJournal } from "../memory/JournalProvider";
 import { useLocale } from "../ui/locale";
 import styles from "./tried.module.css";
 
@@ -18,13 +17,11 @@ const copy = {
 
 export function TriedBadge({ identity }: TriedBadgeProps) {
   const locale = useLocale();
-  const [tried, setTried] = useState(false);
+  const { memories } = useJournal();
   const source = identity.source;
   const id = identity.id;
 
-  useEffect(() => {
-    setTried(hasTriedActivity({ source, id }));
-  }, [source, id]);
+  const tried = memories.some(memory => memory.activity_snapshot.identity?.source === source && memory.activity_snapshot.identity.id === id);
 
   if (!tried) return null;
   return <span className={styles.badge}>{copy[locale]}</span>;

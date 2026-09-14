@@ -1,5 +1,8 @@
 # myDate
 
+V3 Memory Journal implementation and Supabase setup: [docs/v3-setup.md](docs/v3-setup.md).
+The V2 description below is historical; V3 adds authenticated private journals and photo storage.
+
 > **People may change. The memories are still yours.**
 
 myDate is a mobile-first web app for discovering date ideas and keeping small memories from real experiences.

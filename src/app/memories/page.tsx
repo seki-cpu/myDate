@@ -1,78 +1,107 @@
 "use client";
-
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MobileShell } from "../../components/layout/MobileShell";
-import { dateIdeas } from "../../data/dateIdeas";
-import { getMemories, loadSaveData } from "../../lib/storage";
-import type { Memory } from "../../types/domain";
-import { localizeIdea, useLocale } from "../../components/ui/locale";
-
-const copy = {
-  zh: { eyebrow: "Memories", title: "这些经历都属于你。", description: "人可能会变，但你经历过的那些时刻仍然是你的。", empty: "这里还没有回忆", emptyCopy: "完成一次 Adventure 后，它会自动成为一段 Memory。", back: "去找约会灵感", promptDone: "留下了记忆提示", promptSkipped: "没有记录照片提示", deletedFallback: "曾经的活动" },
-  en: { eyebrow: "Memories", title: "These experiences stay yours.", description: "People may change. The memories are still yours.", empty: "No memories yet", emptyCopy: "Complete an Adventure and it will become a Memory automatically.", back: "Find a date idea", promptDone: "Memory prompt kept", promptSkipped: "Photo prompt skipped", deletedFallback: "Past activity" },
-  ja: { eyebrow: "Memories", title: "この経験は、あなたのもの。", description: "相手が変わっても、過ごした時間はあなたの思い出として残る。", empty: "まだ思い出はない", emptyCopy: "Adventure を完了すると、自動的に Memory として残る。", back: "デート案を探す", promptDone: "思い出のヒントを残した", promptSkipped: "写真のヒントはスキップ", deletedFallback: "過去のアクティビティ" },
-} as const;
-
+import { AccountPanel } from "../../components/memory/AccountPanel";
+import { useJournal } from "../../components/memory/JournalProvider";
+import { journalCopy } from "../../components/memory/journalCopy";
+import { PrivatePhoto } from "../../components/memory/PrivatePhoto";
+import { useLocale } from "../../components/ui/locale";
+import {
+  importLocalMemories,
+  localImportState,
+} from "../../lib/services/migration";
 export default function MemoriesPage() {
   const locale = useLocale();
-  const text = copy[locale];
-  const [memories, setMemories] = useState<Memory[]>([]);
-
+  const t = journalCopy[locale];
+  const { user, loading, memories, error, refresh } = useJournal();
+  const [importState, setImportState] = useState("empty");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
   useEffect(() => {
-    setMemories(getMemories(loadSaveData()));
-  }, []);
-
+    setImportState(user ? localImportState(user.id) : "empty");
+    setMessage("");
+  }, [user]);
+  async function migrate() {
+    setBusy(true);
+    setMessage("");
+    try {
+      const result = await importLocalMemories(locale);
+      setMessage(result.skipped ? t.importInvalid : t.importDone);
+      setImportState(user ? localImportState(user.id) : "empty");
+      await refresh();
+    } catch {
+      setMessage(t.failed);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <MobileShell backHref="/" variant="wide">
       <div className="journal-heading">
-        <p className="eyebrow">{text.eyebrow}</p>
-        <h1 className="page-title">{text.title}</h1>
-        <p className="page-copy">{text.description}</p>
+        <p className="eyebrow">Memories</p>
+        <h1 className="page-title">{t.title}</h1>
+        <p className="page-copy">{t.subtitle}</p>
       </div>
-
-      <section className="section journal-section">
-        {memories.length === 0 ? (
-          <div className="memory-card memory-empty-card">
-            <div className="memory-thumb" aria-hidden="true">✦</div>
-            <div>
-              <h2 className="empty-title">{text.empty}</h2>
-              <p className="empty-copy">{text.emptyCopy}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="memory-list">
-            {memories.map((memory) => {
-              const identity = memory.activitySnapshot.identity;
-              const idea = identity.source === "builtin"
-                ? dateIdeas.find((item) => item.id === identity.id)
-                : undefined;
-              const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
-              const title = localizedIdea?.title ?? memory.activitySnapshot.title ?? text.deletedFallback;
-              const date = new Date(memory.completedAt).toLocaleDateString(
-                locale === "zh" ? "zh-CN" : locale === "ja" ? "ja-JP" : "en-US"
-              );
-
-              return (
-                <article className="memory-journal-row" key={memory.id}>
-                  <time className="memory-date" dateTime={memory.completedAt}>{date}</time>
-                  <div className="memory-card">
-                    <div className="memory-thumb" aria-hidden="true">✦</div>
-                    <div className="memory-content">
-                      <h2 className="empty-title">{title}</h2>
-                      <p className="empty-copy">{memory.memoryPromptCompleted ? text.promptDone : text.promptSkipped}</p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <div className="action-stack journal-actions">
-        <Link className="primary-button" href="/">{text.back}</Link>
-      </div>
+      {loading ? (
+        <p role="status">{t.loading}</p>
+      ) : !user ? (
+        <AccountPanel />
+      ) : (
+        <>
+          <Link href="/memories/new" className="primary-button">
+            + {t.add}
+          </Link>
+          {importState === "available" && (
+            <section className="journal-notice">
+              <p>{t.importHint}</p>
+              <button
+                className="secondary-button"
+                disabled={busy}
+                onClick={() => void migrate()}
+              >
+                {busy ? t.importing : t.import}
+              </button>
+            </section>
+          )}
+          {importState === "other" && <p>{t.importOther}</p>}
+          <p role="status">{message}</p>
+          {error && (
+            <p role="alert">
+              {t.failed}{" "}
+              <button onClick={() => void refresh()}>{t.retry}</button>
+            </p>
+          )}
+          <section className="journal-cards">
+            {memories.length === 0 ? (
+              <p>{t.empty}</p>
+            ) : (
+              memories.map((memory) => {
+                const cover = [...memory.memory_images]
+                  .filter((p) => p.ready)
+                  .sort((a, b) => a.sort_order - b.sort_order)[0];
+                return (
+                  <article className="journal-entry" key={memory.id}>
+                    {cover && <PrivatePhoto photo={cover} />}
+                    <Link href={`/memories/${memory.id}`}>
+                      <time dateTime={memory.occurred_at}>
+                        {new Date(memory.occurred_at).toLocaleDateString(
+                          locale,
+                        )}
+                      </time>
+                      <h2>{memory.activity_snapshot.title}</h2>
+                      <p className="journal-excerpt">
+                        {memory.moods.join(" · ")}
+                      </p>
+                      <p className="journal-excerpt">{memory.note}</p>
+                    </Link>
+                  </article>
+                );
+              })
+            )}
+          </section>
+        </>
+      )}
     </MobileShell>
   );
 }

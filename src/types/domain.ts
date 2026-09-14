@@ -25,7 +25,7 @@ export interface LocalizedText extends Record<string, string> {
 /**
  * Canonical date activity content contract.
  * photoPrompt remains the localized Memory Prompt shown after completion.
- * The app does not upload or store user photos.
+ * Optional journal photos are stored privately, separately from activity content.
  */
 export interface DateIdea {
   id: string;
@@ -58,7 +58,39 @@ export interface ActivityIdentity {
 export interface ActivitySnapshot {
   identity: ActivityIdentity;
   title?: string;
+  description?: string;
+  memoryPrompt?: string;
 }
+
+export interface MemoryImage {
+  id: string;
+  user_id: string;
+  memory_id: string;
+  storage_path: string;
+  sort_order: number;
+  width: number | null;
+  height: number | null;
+  ready: boolean;
+  created_at: string;
+}
+
+/** Database-backed journal. Local legacy Memory remains an import contract only. */
+export interface JournalMemory {
+  id: string;
+  user_id: string;
+  source_key: string | null;
+  activity_snapshot: { title: string; description?: string; memoryPrompt?: string; identity?: ActivityIdentity };
+  occurred_at: string;
+  rating: MemoryRating;
+  moods: string[];
+  note: string;
+  memory_prompt_completed: boolean;
+  created_at: string;
+  updated_at: string;
+  memory_images: MemoryImage[];
+}
+
+export type JournalInput = Pick<JournalMemory, "activity_snapshot" | "occurred_at" | "rating" | "moods" | "note" | "memory_prompt_completed">;
 
 export type RatingScore = 1 | 2 | 3 | 4 | 5;
 

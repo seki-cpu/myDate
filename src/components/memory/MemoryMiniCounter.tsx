@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getMemoryCount, loadSaveData } from "../../lib/storage";
+import { useJournal } from "./JournalProvider";
 import styles from "./memoryMini.module.css";
 
 const memoryChangeEventName = "mydate-memory-change";
@@ -13,19 +13,24 @@ export function notifyMemoryChanged() {
 }
 
 export function notifyMemoryReward(delta: number) {
-  window.dispatchEvent(new CustomEvent<number>(memoryRewardEventName, { detail: delta }));
+  window.dispatchEvent(
+    new CustomEvent<number>(memoryRewardEventName, { detail: delta }),
+  );
 }
 
 export function MemoryMiniCounter() {
-  const [count, setCount] = useState(0);
+  const { memories, refresh } = useJournal();
+  const count = memories.length;
   const [rewardDelta, setRewardDelta] = useState<number | null>(null);
   const [bumping, setBumping] = useState(false);
 
   useEffect(() => {
-    const refresh = () => setCount(getMemoryCount(loadSaveData()));
+    const refreshCount = () => {
+      void refresh();
+    };
     const reward = (event: Event) => {
       const delta = event instanceof CustomEvent ? Number(event.detail) : 0;
-      refresh();
+      refreshCount();
       setBumping(false);
       setRewardDelta(Number.isFinite(delta) && delta > 0 ? delta : null);
       window.requestAnimationFrame(() => setBumping(true));
@@ -33,14 +38,13 @@ export function MemoryMiniCounter() {
       window.setTimeout(() => setRewardDelta(null), 1400);
     };
 
-    refresh();
-    window.addEventListener(memoryChangeEventName, refresh);
+    window.addEventListener(memoryChangeEventName, refreshCount);
     window.addEventListener(memoryRewardEventName, reward);
     return () => {
-      window.removeEventListener(memoryChangeEventName, refresh);
+      window.removeEventListener(memoryChangeEventName, refreshCount);
       window.removeEventListener(memoryRewardEventName, reward);
     };
-  }, []);
+  }, [refresh]);
 
   return (
     <Link
@@ -49,9 +53,15 @@ export function MemoryMiniCounter() {
       aria-label={`Memories ${count}`}
       data-memory-target
     >
-      <span className={styles.sparkle} aria-hidden="true">✦</span>
+      <span className={styles.sparkle} aria-hidden="true">
+        ✦
+      </span>
       <span className={styles.count}>{count}</span>
-      {rewardDelta ? <span className={styles.delta} aria-hidden="true">+{rewardDelta}</span> : null}
+      {rewardDelta ? (
+        <span className={styles.delta} aria-hidden="true">
+          +{rewardDelta}
+        </span>
+      ) : null}
     </Link>
   );
 }

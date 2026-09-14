@@ -2,8 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { DateIdea } from "../../types/domain";
-import { setMemoryPromptCompleted } from "../../lib/storage";
+import Link from "next/link";
+import type { DateIdea, MemoryRating } from "../../types/domain";
+import { finishJournalAdventure, loadSaveData } from "../../lib/storage";
+import { MemoryService } from "../../lib/services/memories";
+import { useJournal } from "../memory/JournalProvider";
+import { AccountPanel } from "../memory/AccountPanel";
+import { RatingFields } from "../memory/MemoryEditor";
+import { journalCopy } from "../memory/journalCopy";
 import { notifyMemoryReward } from "../memory/MemoryMiniCounter";
 import { flowCopy, localizeIdea, localizePhotoPrompt, useLocale } from "../ui/locale";
 import { RewardBurst, type RewardPoint } from "./RewardBurst";
@@ -49,11 +55,22 @@ const memoryPromptCopy = {
   },
 } as const;
 
-export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
+export function CompleteContent(props: CompleteContentProps) {
+  const { user } = useJournal();
+  return <CompleteSession key={user?.id ?? "guest"} {...props} />;
+}
+
+function CompleteSession({ idea, memoryId }: CompleteContentProps) {
   const router = useRouter();
   const locale = useLocale();
   const copy = flowCopy[locale];
   const memoryCopy = memoryPromptCopy[locale];
+  const journal = journalCopy[locale];
+  const { user, loading, refresh } = useJournal();
+  const [rating, setRating] = useState<MemoryRating>({});
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [savedId, setSavedId] = useState("");
   const localizedIdea = idea ? localizeIdea(idea, locale) : undefined;
   const prompt = idea ? localizePhotoPrompt(idea, locale) ?? copy.genericPhoto : copy.genericPhoto;
   const [phase, setPhase] = useState<RewardPhase>("idle");
@@ -71,15 +88,28 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
     return () => media.removeEventListener("change", sync);
   }, []);
 
-  function resolvePrompt(completed: boolean) {
-    if (phase !== "idle") return;
+  async function resolvePrompt(completed: boolean) {
+    if (phase !== "idle" || saving) return;
     if (!memoryId) {
       router.push("/");
       return;
     }
 
-    if (completed) setMemoryPromptCompleted(memoryId, true);
-    setPhase("modal");
+    setSaving(true); setSaveError(false);
+    try {
+      const adventure = loadSaveData().activeAdventures.find(item => item.id === memoryId);
+      if (!adventure) throw new Error("adventure_unavailable");
+      const snapshot = adventure.activitySnapshot;
+      const memory = await MemoryService.create({
+        activity_snapshot: { ...snapshot, title: snapshot.title ?? localizedIdea?.title ?? journal.legacy },
+        occurred_at: new Date().toISOString(), rating, moods: [], note: "", memory_prompt_completed: completed,
+      }, `adventure:${adventure.id}`);
+      setSavedId(memory.id);
+      finishJournalAdventure(adventure.id);
+      await refresh();
+      setPhase("modal");
+    } catch { setSaveError(true); }
+    finally { setSaving(false); }
   }
 
   function playReward() {
@@ -93,7 +123,6 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
       rewardFinishedRef.current = true;
       notifyMemoryReward(1);
       setPhase("done");
-      window.setTimeout(() => router.push("/"), reducedMotion ? 500 : 1100);
       return;
     }
 
@@ -116,9 +145,11 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
 
     window.setTimeout(() => {
       notifyMemoryReward(1);
-      window.setTimeout(() => router.push("/"), reducedMotion ? 500 : 1100);
     }, 0);
-  }, [phase, reducedMotion, router]);
+  }, [phase]);
+
+  if (loading) return <p>{journal.loading}</p>;
+  if (!user) return <AccountPanel returnTo={`/complete?${new URLSearchParams({ id: idea?.id ?? "", memoryId: memoryId ?? "" })}`} />;
 
   return (
     <div className={styles.shell}>
@@ -133,24 +164,27 @@ export function CompleteContent({ idea, memoryId }: CompleteContentProps) {
         <p className={styles.promptNote}>{memoryCopy.note}</p>
       </section>
 
-      <div className={`action-stack ${styles.actions}`}>
+      {phase === "idle" && <div className="journal-form journal-panel"><RatingFields rating={rating} setRating={setRating} /></div>}
+      {saveError && <p role="alert">{journal.failed}</p>}
+      {phase === "done" && <div className="action-stack"><p>{journal.saved}</p><Link className="primary-button" href={`/memories/${savedId}`}>{journal.enrich}</Link><Link className="secondary-button" href="/">{journal.done}</Link></div>}
+      {phase === "idle" && <div className={`action-stack ${styles.actions}`}>
         <button
           className="primary-button"
           type="button"
           onClick={() => resolvePrompt(true)}
-          disabled={phase !== "idle"}
+          disabled={saving}
         >
-          {phase === "idle" ? memoryCopy.gotIt : "…"}
+          {saving ? "…" : memoryCopy.gotIt}
         </button>
         <button
           className="secondary-button"
           type="button"
           onClick={() => resolvePrompt(false)}
-          disabled={phase !== "idle"}
+          disabled={saving}
         >
           {memoryCopy.skip}
         </button>
-      </div>
+      </div>}
 
       {phase === "modal" ? (
         <div className={styles.modalBackdrop} role="presentation">
