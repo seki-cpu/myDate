@@ -1,62 +1,116 @@
 # V3 implementation verification — 2026-09-14
 
-## Completed checks
+## Current product acceptance focus
 
-| Check | Result | Evidence scope |
-|---|---|---|
-| TypeScript | Passed | `tsc --noEmit` |
-| ESLint | Passed | Source and test files; generated Next artifacts excluded |
-| Production build | Passed | Next.js 15.5.24; isolated build directory |
-| PostgreSQL migration and RLS | Passed | PGlite executes the actual migration with test Auth/Storage schemas |
-| Private ownership | Passed | Second user cannot select another user's Memories, image rows, or objects; forged owner inserts denied; anonymous reads denied |
-| Photo limit | Passed | Nine reservations accepted, tenth rejected, removed slot reusable |
-| Safe deletion | Passed | Metadata cannot be removed before its object; parent cannot be deleted with image rows attached |
-| Snapshot and rating rules | Passed | Snapshot mutation and out-of-range rating rejected |
-| Retry/import/history | Passed | Duplicate source key rejected; valid legacy rows salvaged; invalid dates skipped; discovery reset preserves local legacy backup |
-| Sign-in screen | Passed | Chromium at 390 × 844; Japanese UI rendered without application errors |
-| Journal interaction | Passed with fixture | Chinese custom mood and note saved; arbitrary past Memory with zero photos/moods/note created; count updated |
-| Photo interface | Passed with fixture | HEIC upload; nine-photo picker disable; full-screen viewer next/previous/Escape; desktop and mobile layout |
-| HEIC normalization | Passed in Chromium | Upstream `heic2any/demo/1.heic`: 41,389 bytes converted to 1440 × 960 JPEG, 190,744 bytes |
-| JPEG/PNG/WebP normalization | Passed in Chromium | 3000 × 1800 inputs normalized to 2400 × 1440 |
-| Malformed HEIC | Passed in Chromium | Explicit `photo_heic` recovery error |
+The active Memory creation flow is journal-first, not rating-first.
 
-Three Node test groups are in `tests/journal.test.ts`. Browser fixtures live only under `tests`; the application never imports them. UI fixture requests are intercepted only for `http://127.0.0.1:3999` on `localhost:3101`. They are not evidence of a successful connection to a real Supabase project.
-
-## Pending before beta release
-
-- Provision a real Supabase project and apply the migration.
-- Verify real email confirmation, sign-in/out, cloud persistence after relogin, authenticated Storage upload/download/delete, and two-user RLS through the live APIs.
-- Test actual current iPhone HEIC/HEIF files, orientation, low-memory behavior, iOS Safari and Android Chrome. A Chromium sample conversion is not a device acceptance test.
-- Test live interrupted uploads and concurrent uploads in two tabs against Supabase; database slot/ownership constraints are already covered locally.
-
-Follow `v3-setup.md` for the full release matrix. No merge or deployment was performed.
-
-## Reproduce browser checks
-
-Use an isolated output directory to avoid an existing dev process overwriting build artifacts:
-
-```powershell
-$env:NEXT_DIST_DIR = '.next-v3-qa'
-$env:NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:3999'
-$env:NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'local-ui-test-key'
-pnpm.cmd dev --port 3101
+```text
+Adventure Complete
+→ Memory Prompt
+→ I got it / Skip
+→ Create Memory
+→ optional journal text
+→ optional photos
+→ Save Memory
+→ Memory detail
 ```
 
-In another terminal:
+The Memory row is created idempotently before the Create Memory page opens. The Create Memory page enriches/updates the existing Memory.
 
-```powershell
-pnpm.cmd dlx agent-browser --session mydate-v3-fixture --init-script tests/browser-fixture.js open http://localhost:3101/memories
-pnpm.cmd dlx agent-browser --session mydate-v3-fixture snapshot -i
+## QA requirements for Memory creation
+
+QA must verify all of the following:
+
+1. `I got it` opens Create Memory.
+2. `Skip` opens Create Memory.
+3. Both paths resolve to the same canonical Memory creation contract.
+4. Empty journal text + no photos can still save.
+5. Text-only Memory saves.
+6. Photo-only Memory saves.
+7. Text + photos saves.
+8. No rating controls appear in Memory creation.
+9. No rating controls appear in Memory editing.
+10. No replacement scoring system is introduced.
+11. Replaying the completion flow does not create a duplicate Memory for the same Adventure.
+12. Save Memory updates the existing Memory row.
+13. Save Memory routes to Memory detail.
+14. Journal text can be edited later.
+15. Photos can be added later.
+16. Photos can be removed later.
+17. Photos uploaded during creation can be removed before leaving the creation surface.
+18. Removing photos does not delete the Memory.
+19. Activity Snapshot remains unchanged after note/photo edits.
+20. Legacy Memories still render even when they contain historical rating data.
+21. Legacy rating values are not exposed as editable fields and no new rating values are created.
+22. Optional moods, if used later in editing, never block saving.
+23. Mobile layout remains usable.
+24. Desktop layout remains readable and focused.
+25. zh / en / ja copy remains consistent.
+26. No release-blocking console errors occur.
+
+## Photo verification
+
+Verify:
+
+- JPEG / PNG / WebP upload
+- HEIC / HEIF conversion on supported target browsers
+- selected/uploaded photo previews
+- remove photo
+- retry failed upload
+- nine-photo limit
+- private authenticated read
+- no public Storage URL
+- deleting a photo leaves the Memory intact
+- deleting a Memory removes its photos through the supported deletion flow
+
+## Backend verification
+
+Apply `supabase/migrations/202609140001_memory_journal.sql` to the real Supabase project before live QA.
+
+Verify:
+
+- `profiles` exists
+- `memories` exists
+- `memory_images` exists
+- `memory-photos` bucket exists and is private
+- RLS is enabled
+- User B cannot access User A's Memories or photos
+- duplicate `source_key` for one user cannot insert a second Adventure Memory
+
+A missing `public.memories` table will surface as a REST 404 and is a backend provisioning failure, not a valid application state.
+
+## Legacy compatibility
+
+Legacy rating schema/data may remain for backward compatibility. This does not make rating part of the current product flow.
+
+QA should confirm:
+
+- old Memories with rating data still load
+- rating data is not required to save
+- current UI does not render rating controls
+- current UI does not generate new rating values
+
+## Build / static checks
+
+Run:
+
+```text
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm build
 ```
 
-Photo conversion check (test assets are not committed):
+## Device matrix
 
-```powershell
-New-Item -ItemType Directory -Force artifacts
-Invoke-WebRequest 'https://raw.githubusercontent.com/alexcorvi/heic2any/master/demo/1.heic' -OutFile artifacts/sample.heic
-node tests/photo-browser-server.mjs
-# In another terminal with the fixture browser open:
-Get-Content -Raw tests/photo-browser-check.js | pnpm.cmd dlx agent-browser --session mydate-v3-fixture eval --stdin
-```
+At minimum:
 
-Use absolute file paths for `agent-browser upload` on Windows. Stop the test servers and close their browser sessions after verification. The placeholder backend URL/key above are exclusively for the intercepted local UI fixture.
+- 320 px mobile width
+- 375 px mobile width
+- 390 px mobile width
+- 430 px mobile width
+- desktop Chrome / Edge
+- iOS Safari
+- Android Chrome
+
+Do not merge into `master` until the real Supabase integration and this QA matrix pass.
