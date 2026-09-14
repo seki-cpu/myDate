@@ -199,6 +199,105 @@
   border-radius: 12px;
   background: transparent;
 }
+
+.account-panel {
+  display: grid;
+  gap: 24px;
+  padding: 26px;
+}
+.account-profile-header,
+.account-login-header {
+  min-width: 0;
+}
+.account-profile-header {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+.account-profile-copy h2,
+.account-login-header h2 {
+  margin: 2px 0 0;
+  font-size: 22px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.account-avatar {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--gold-wash);
+  color: var(--gold);
+  font-size: 22px;
+  font-weight: 700;
+}
+.account-status-label {
+  margin: 0;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.account-helper {
+  margin: 6px 0 0;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+.account-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.account-summary > div {
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+.account-summary dt {
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.account-summary dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.account-form {
+  gap: 16px;
+}
+.account-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.account-actions .primary-button {
+  min-width: 150px;
+}
+.account-signout-button {
+  width: auto;
+}
+.account-auth-actions {
+  margin-top: 4px;
+}
+.account-message {
+  margin: 0;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 400;
+}
+
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -226,5 +325,29 @@ button:disabled {
   .topbar-actions .section-link {
     max-width: 100px;
     font-size: 12px;
+  }
+  .account-panel {
+    gap: 20px;
+  }
+  .account-profile-header {
+    grid-template-columns: 50px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .account-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    font-size: 19px;
+  }
+  .account-summary {
+    grid-template-columns: 1fr;
+  }
+  .account-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .account-actions .primary-button,
+  .account-actions .secondary-button {
+    width: 100%;
   }
 }
