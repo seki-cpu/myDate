@@ -52,7 +52,7 @@ export function HomePastMemoryEntry() {
         <p className="eyebrow">{text.eyebrow}</p>
         <h2 className="section-title">{text.title}</h2>
         <p className="page-copy">{text.body}</p>
-        <form onSubmit={submit}>
+        <form className="home-past-memory-form" onSubmit={submit}>
           <input
             maxLength={300}
             placeholder={text.placeholder}
