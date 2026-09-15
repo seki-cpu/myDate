@@ -164,6 +164,20 @@
     color: var(--text);
     box-shadow: 0 8px 22px rgba(56, 43, 22, 0.04);
   }
+
+  .memory-detail-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, 620px);
+    max-width: 620px;
+    margin: 28px auto 0;
+  }
+
+  .memory-detail-actions .secondary-button,
+  .memory-detail-actions .journal-danger {
+    width: 100%;
+    min-height: 52px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -381,7 +395,7 @@
     padding: 24px;
   }
 
-  .journal-actions {
+  .journal-actions:not(.memory-detail-actions) {
     display: grid;
     grid-template-columns: 150px minmax(0, 760px);
     gap: 28px;
@@ -390,7 +404,7 @@
     margin: 28px 0 0;
   }
 
-  .journal-actions .primary-button {
+  .journal-actions:not(.memory-detail-actions) .primary-button {
     grid-column: 2;
     justify-self: end;
     width: 320px;
