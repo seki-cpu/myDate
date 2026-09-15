@@ -337,8 +337,8 @@
   .result-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    width: min(100%, 620px);
-    margin: 28px 0 0 auto;
+    width: 100%;
+    margin: 28px auto 0;
   }
 
   .result-actions .secondary-button,
@@ -348,15 +348,16 @@
 
   .adventure-action,
   .memory-detail-actions {
-    width: min(100%, 620px);
+    width: 100%;
+    max-width: none;
     margin-left: auto;
-    margin-right: 0;
+    margin-right: auto;
   }
 
   .app-shell-focused .action-stack:not(.discover-actions):not(.result-secondary-action) {
-    max-width: 620px;
-    margin-left: auto;
-    margin-right: 0;
+    width: 100%;
+    max-width: none;
+    margin-inline: auto;
   }
 
   .app-shell-focused .empty-card {
@@ -406,9 +407,9 @@
   .journal-actions:not(.memory-detail-actions) {
     display: grid;
     grid-template-columns: 1fr;
-    width: min(100%, 620px);
-    max-width: 620px;
-    margin: 28px 0 0 auto;
+    width: min(100%, 1000px);
+    max-width: 1000px;
+    margin: 28px auto 0;
   }
 
   .journal-actions:not(.memory-detail-actions) .primary-button {
