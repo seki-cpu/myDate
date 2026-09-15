@@ -147,12 +147,68 @@
   color: var(--muted);
 }
 .journal-file-label {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
-  padding: 16px 0;
+  padding: 18px 0 6px;
 }
-.journal-file-label input {
-  max-width: 100%;
+.journal-upload-caption {
+  width: 100%;
+  color: var(--muted);
+  font-size: 13px;
+}
+.journal-upload-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #fffdf9;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(184, 148, 82, 0.16);
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+.journal-upload-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 13px 26px rgba(184, 148, 82, 0.22);
+}
+.journal-upload-button:focus-within {
+  outline: 3px solid rgba(184, 148, 82, 0.28);
+  outline-offset: 3px;
+}
+.journal-upload-button.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.journal-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.journal-upload-status,
+.journal-upload-error {
+  min-height: 0;
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+.journal-upload-status {
+  color: var(--gold);
+}
+.journal-upload-error {
+  color: #9c3434;
 }
 .journal-viewer {
   width: min(960px, 100vw);
@@ -348,6 +404,9 @@ button:disabled {
   }
   .account-actions .primary-button,
   .account-actions .secondary-button {
+    width: 100%;
+  }
+  .journal-upload-button {
     width: 100%;
   }
 }
