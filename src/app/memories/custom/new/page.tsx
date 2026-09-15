@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { MobileShell } from "../../../../components/layout/MobileShell";
 import { AccountPanel } from "../../../../components/memory/AccountPanel";
 import { useJournal } from "../../../../components/memory/JournalProvider";
@@ -42,7 +42,7 @@ function localDateValue() {
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
 
-export default function CustomMemoryPage() {
+function CustomMemoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
@@ -140,5 +140,13 @@ export default function CustomMemoryPage() {
         </form>
       )}
     </MobileShell>
+  );
+}
+
+export default function CustomMemoryPage() {
+  return (
+    <Suspense fallback={null}>
+      <CustomMemoryContent />
+    </Suspense>
   );
 }
