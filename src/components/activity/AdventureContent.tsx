@@ -51,7 +51,7 @@ export function AdventureContent({ idea, adventureId }: AdventureContentProps) {
         </div>
       </section>
 
-      <div className="bottom-action">
+      <div className="bottom-action adventure-action">
         <div className="bottom-action-inner">
           <button className="primary-button" type="button" disabled={finishing} onClick={finishAdventure}>
             {finishing ? "…" : copy.finished}
