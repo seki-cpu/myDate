@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { MobileShell } from "../../../../components/layout/MobileShell";
 import { AccountPanel } from "../../../../components/memory/AccountPanel";
 import { useJournal } from "../../../../components/memory/JournalProvider";
@@ -36,6 +36,12 @@ const copy = {
   },
 } as const;
 
+function localDateValue() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60_000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
 export default function CustomMemoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,24 +49,28 @@ export default function CustomMemoryPage() {
   const text = copy[locale];
   const journal = journalCopy[locale];
   const { user, loading, refresh } = useJournal();
-  const draftId = useMemo(
-    () => searchParams.get("draft") || crypto.randomUUID(),
-    [searchParams],
-  );
+  const queryDraft = searchParams.get("draft") ?? "";
+  const [generatedDraft, setGeneratedDraft] = useState("");
   const [title, setTitle] = useState(searchParams.get("title") ?? "");
-  const [date, setDate] = useState(new Date().toLocaleDateString("en-CA"));
+  const [date, setDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
+  const draftId = queryDraft || generatedDraft;
+
+  useEffect(() => {
+    if (!queryDraft) setGeneratedDraft(crypto.randomUUID());
+    setDate((current) => current || localDateValue());
+  }, [queryDraft]);
 
   const returnTo = `/memories/custom/new?${new URLSearchParams({
     title,
-    draft: draftId,
+    ...(draftId ? { draft: draftId } : {}),
   }).toString()}`;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     const trimmed = title.trim();
-    if (!trimmed || saving) return;
+    if (!trimmed || !draftId || !date || saving) return;
 
     setSaving(true);
     setError(false);
@@ -123,7 +133,7 @@ export default function CustomMemoryPage() {
           <button
             className="primary-button"
             type="submit"
-            disabled={saving || !title.trim()}
+            disabled={saving || !title.trim() || !draftId || !date}
           >
             {saving ? journal.loading : text.action}
           </button>
