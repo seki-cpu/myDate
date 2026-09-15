@@ -119,23 +119,32 @@ export function PhotoJournal({
             </div>
           ))}
       </div>
-      <label className="journal-file-label">
-        {t.addPhotos}
-        <input
-          aria-label={t.addPhotos}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-          multiple
-          disabled={busy || photos.length >= MAX_PHOTOS}
-          onChange={(event) => {
-            const files = Array.from(event.target.files ?? []);
-            event.target.value = "";
-            void upload(files);
-          }}
-        />
-      </label>
-      <p role="status">{progress}</p>
-      <p role="alert">{error}</p>
+
+      <div className="journal-file-label">
+        <span className="journal-upload-caption">{t.addPhotos}</span>
+        <label
+          className={`journal-upload-button${busy || photos.length >= MAX_PHOTOS ? " is-disabled" : ""}`}
+        >
+          <span aria-hidden="true">＋</span>
+          <span>{t.addPhotos}</span>
+          <input
+            className="journal-file-input"
+            aria-label={t.addPhotos}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+            multiple
+            disabled={busy || photos.length >= MAX_PHOTOS}
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? []);
+              event.target.value = "";
+              void upload(files);
+            }}
+          />
+        </label>
+      </div>
+
+      <p className="journal-upload-status" role="status">{progress}</p>
+      <p className="journal-upload-error" role="alert">{error}</p>
       {failed.length > 0 && (
         <div>
           <p>{failed.map((f) => f.name).join(", ")}</p>
