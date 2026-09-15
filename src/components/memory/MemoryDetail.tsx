@@ -110,7 +110,7 @@ function Detail({ id }: { id: string }) {
         photos={memory.memory_images}
         refresh={refresh}
       />
-      <div className="journal-actions">
+      <div className="journal-actions memory-detail-actions">
         <Link className="secondary-button" href="/memories">
           {t.done}
         </Link>
