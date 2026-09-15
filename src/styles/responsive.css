@@ -56,8 +56,8 @@
   }
 
   .adventure-action .primary-button:hover {
-    background: var(--surface-soft);
-    border-color: rgba(184, 148, 82, 0.32);
+    background: var(--gold-wash);
+    border-color: rgba(184, 148, 82, 0.38);
     box-shadow: 0 10px 24px rgba(56, 43, 22, 0.07);
   }
 
@@ -145,8 +145,8 @@
 
   .adventure-action {
     position: static;
-    width: min(100%, 680px);
-    margin: 28px auto 0;
+    width: min(100%, 520px);
+    margin: 24px auto 0;
     padding: 0;
     background: none;
   }
@@ -158,11 +158,11 @@
 
   .adventure-action .primary-button {
     width: 100%;
-    min-height: 58px;
+    min-height: 56px;
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--text);
-    box-shadow: 0 8px 22px rgba(56, 43, 22, 0.05);
+    box-shadow: 0 8px 22px rgba(56, 43, 22, 0.04);
   }
 }
 
