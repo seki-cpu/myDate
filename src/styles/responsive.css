@@ -31,6 +31,11 @@
   max-width: 320px;
 }
 
+.memory-detail-actions {
+  width: 100%;
+  max-width: none;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .activity-card,
   .primary-button,
