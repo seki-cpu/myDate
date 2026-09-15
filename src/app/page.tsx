@@ -4,6 +4,7 @@ import Link from "next/link";
 import { dateIdeas } from "../data/dateIdeas";
 import { HomeIdeaBrowser } from "../components/activity/HomeIdeaBrowser";
 import { MobileShell } from "../components/layout/MobileShell";
+import { HomePastMemoryEntry } from "../components/memory/HomePastMemoryEntry";
 import { uiCopy, useLocale } from "../components/ui/locale";
 
 export default function HomePage() {
@@ -28,6 +29,8 @@ export default function HomePage() {
           </a>
         </div>
       </section>
+
+      <HomePastMemoryEntry />
 
       <section className="section" id="browse">
         <div className="section-heading">
