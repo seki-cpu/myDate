@@ -2,9 +2,9 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { LanguageMenu } from "../ui/LanguageMenu";
 import { shellCopy, useLocale } from "../ui/locale";
 import { MemoryMiniCounter } from "../memory/MemoryMiniCounter";
+import { UserMenu } from "./UserMenu";
 
 interface MobileShellProps {
   children: ReactNode;
@@ -41,7 +41,7 @@ export function MobileShell({
 
         <div className="topbar-actions">
           <MemoryMiniCounter />
-          <LanguageMenu />
+          <UserMenu />
           {hasTrailingAction ? (
             <Link className="section-link" href={trailingHref!}>
               {trailingLabel}
@@ -68,7 +68,7 @@ export function MobileShell({
               <Link className="desktop-back-link" href={backHref}>← {copy.back}</Link>
             ) : null}
             <MemoryMiniCounter />
-            <LanguageMenu />
+            <UserMenu />
             {hasTrailingAction ? (
               <Link className="section-link" href={trailingHref!}>
                 {trailingLabel}

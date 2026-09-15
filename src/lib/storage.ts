@@ -399,3 +399,26 @@ export function startNewDiscoveryRound(): SaveData {
   saveSaveData(data);
   return data;
 }
+
+/** Salvage valid rows without overwriting a partially damaged legacy save. */
+export function getImportCandidates(): { memories: Memory[]; invalid: number } {
+  if (!isBrowser()) return { memories: [], invalid: 0 };
+  const current = safeParse(window.localStorage.getItem(STORAGE_KEY));
+  if (current && typeof current === "object" && "memories" in current && Array.isArray(current.memories)) {
+    const valid = current.memories.filter(isMemory);
+    return { memories: uniqueMemories(valid), invalid: current.memories.length - valid.length };
+  }
+  const migrated = loadMigratedData();
+  return { memories: migrated?.memories ?? [], invalid: 0 };
+}
+
+/** Called only after the authenticated database write succeeds. */
+export function finishJournalAdventure(adventureId: string): void {
+  const data = loadSaveData();
+  const adventure = data.activeAdventures.find(item => item.id === adventureId);
+  if (!adventure) return;
+  const key = getActivityKey(adventure.activitySnapshot.identity);
+  data.activeAdventures = data.activeAdventures.filter(item => item.id !== adventureId);
+  if (!data.discoveryRound.completedActivityKeys.includes(key)) data.discoveryRound.completedActivityKeys.push(key);
+  saveSaveData(data);
+}

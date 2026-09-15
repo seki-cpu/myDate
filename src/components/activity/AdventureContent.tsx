@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { DateIdea } from "../../types/domain";
-import { completeAdventure } from "../../lib/storage";
-import { notifyMemoryChanged } from "../memory/MemoryMiniCounter";
 import { flowCopy, localizeIdea, useLocale } from "../ui/locale";
 
 interface AdventureContentProps {
@@ -22,11 +20,6 @@ export function AdventureContent({ idea, adventureId }: AdventureContentProps) {
   function finishAdventure() {
     if (finishing) return;
     setFinishing(true);
-
-    if (adventureId) {
-      completeAdventure(adventureId);
-      notifyMemoryChanged();
-    }
 
     const params = new URLSearchParams();
     if (localizedIdea) params.set("id", localizedIdea.id);
@@ -58,7 +51,7 @@ export function AdventureContent({ idea, adventureId }: AdventureContentProps) {
         </div>
       </section>
 
-      <div className="bottom-action">
+      <div className="bottom-action adventure-action">
         <div className="bottom-action-inner">
           <button className="primary-button" type="button" disabled={finishing} onClick={finishAdventure}>
             {finishing ? "…" : copy.finished}

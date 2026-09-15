@@ -31,6 +31,11 @@
   max-width: 320px;
 }
 
+.memory-detail-actions {
+  width: 100%;
+  max-width: none;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .activity-card,
   .primary-button,
@@ -53,6 +58,12 @@
   .secondary-button:hover,
   .refresh-ideas-button:hover {
     transform: translateY(-1px);
+  }
+
+  .adventure-action .primary-button:hover {
+    background: var(--gold-wash);
+    border-color: rgba(184, 148, 82, 0.38);
+    box-shadow: 0 10px 24px rgba(56, 43, 22, 0.07);
   }
 
   .desktop-nav-link:hover,
@@ -104,6 +115,73 @@
 
   .memory-empty-card {
     max-width: 720px;
+  }
+
+  .result-actions {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    margin-top: 28px;
+  }
+
+  .result-actions .action-stack,
+  .result-actions .bottom-action {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .result-actions .bottom-action {
+    position: static;
+    padding: 0;
+    background: none;
+  }
+
+  .result-actions .bottom-action-inner {
+    width: 100%;
+    max-width: none;
+  }
+
+  .result-actions .secondary-button,
+  .result-actions .primary-button {
+    width: 100%;
+    min-height: 56px;
+  }
+
+  .adventure-action {
+    position: static;
+    width: min(100%, 620px);
+    margin: 24px auto 0;
+    padding: 0;
+    background: none;
+  }
+
+  .adventure-action .bottom-action-inner {
+    width: 100%;
+    max-width: none;
+  }
+
+  .adventure-action .primary-button {
+    width: 100%;
+    min-height: 56px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 8px 22px rgba(56, 43, 22, 0.04);
+  }
+
+  .memory-detail-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, 620px);
+    max-width: 620px;
+    margin: 28px auto 0;
+  }
+
+  .memory-detail-actions .secondary-button,
+  .memory-detail-actions .journal-danger {
+    width: 100%;
+    min-height: 52px;
   }
 }
 
@@ -262,27 +340,28 @@
   }
 
   .result-actions {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    width: min(100%, 620px);
+    width: 100%;
     margin: 28px auto 0;
-  }
-
-  .result-actions .action-stack,
-  .result-actions .bottom-action {
-    max-width: none;
-    margin-top: 0;
   }
 
   .result-actions .secondary-button,
   .result-actions .primary-button {
-    width: 100%;
     min-height: 52px;
   }
 
+  .adventure-action,
+  .memory-detail-actions {
+    width: 100%;
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .app-shell-focused .action-stack:not(.discover-actions):not(.result-secondary-action) {
-    max-width: 620px;
+    width: 100%;
+    max-width: none;
     margin-inline: auto;
   }
 
@@ -330,20 +409,17 @@
     padding: 24px;
   }
 
-  .journal-actions {
+  .journal-actions:not(.memory-detail-actions) {
     display: grid;
-    grid-template-columns: 150px minmax(0, 760px);
-    gap: 28px;
+    grid-template-columns: 1fr;
     width: min(100%, 1000px);
     max-width: 1000px;
-    margin: 28px 0 0;
+    margin: 28px auto 0;
   }
 
-  .journal-actions .primary-button {
-    grid-column: 2;
-    justify-self: end;
-    width: 320px;
-    min-height: 50px;
+  .journal-actions:not(.memory-detail-actions) .primary-button {
+    width: 100%;
+    min-height: 52px;
   }
 
   .language-popover {

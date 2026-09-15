@@ -43,6 +43,8 @@ export function ResultContent({ idea }: ResultContentProps) {
     const adventure = startAdventure({
       identity: { source: "builtin", id: ideaId },
       title: ideaTitle,
+      description: localizedIdea?.description,
+      memoryPrompt: localizedIdea?.photoPrompt,
     });
     router.push(`/adventure?id=${ideaId}&adventureId=${adventure.id}`);
   }
