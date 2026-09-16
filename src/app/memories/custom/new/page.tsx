@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { MobileShell } from "../../../../components/layout/MobileShell";
-import { AccountPanel } from "../../../../components/memory/AccountPanel";
+import { AccountRequired } from "../../../../components/memory/AccountRequired";
 import { useJournal } from "../../../../components/memory/JournalProvider";
 import { journalCopy } from "../../../../components/memory/journalCopy";
 import { useLocale } from "../../../../components/ui/locale";
@@ -106,7 +106,7 @@ function CustomMemoryContent() {
       {loading ? (
         <p>{journal.loading}</p>
       ) : !user ? (
-        <AccountPanel returnTo={returnTo} />
+        <AccountRequired returnTo={returnTo} />
       ) : (
         <form className="journal-panel journal-form" onSubmit={submit}>
           <label>
