@@ -10,27 +10,27 @@ import { journalCopy } from "./journalCopy";
 
 const accountCopy = {
   en: {
-    signedOut: "Signed out",
-    signedOutTitle: "Sign in to your private space",
-    signedOutHint: "Your memories and photos stay connected to your account.",
+    signedOut: "Private account",
+    signedOutTitle: "Sign in or create your private space",
+    signedOutHint: "Create an account to keep memories and photos private, or sign in if you already have one.",
     signedIn: "Signed in",
     accountLabel: "Account",
     privacyLabel: "Privacy",
     privacyValue: "Private to you",
   },
   zh: {
-    signedOut: "未登录",
-    signedOutTitle: "登录你的私人空间",
-    signedOutHint: "登录后，回忆和照片会保存在你的私人账号中。",
+    signedOut: "私人账号",
+    signedOutTitle: "登录或创建你的私人空间",
+    signedOutHint: "创建账号后即可保存私人回忆和照片；已有账号可以直接登录。",
     signedIn: "已登录",
     accountLabel: "账号",
     privacyLabel: "隐私",
     privacyValue: "仅自己可见",
   },
   ja: {
-    signedOut: "未ログイン",
-    signedOutTitle: "プライベートな空間にログイン",
-    signedOutHint: "ログインすると、思い出や写真があなたのアカウントに保存されます。",
+    signedOut: "プライベートアカウント",
+    signedOutTitle: "ログインまたはアカウントを作成",
+    signedOutHint: "アカウントを作成すると、思い出や写真を自分だけのものとして保存できる。すでにある場合はログインしよう。",
     signedIn: "ログイン中",
     accountLabel: "アカウント",
     privacyLabel: "プライバシー",
@@ -40,15 +40,17 @@ const accountCopy = {
 
 export function AccountPanel({
   returnTo = "/memories",
+  initialMode = "signin",
 }: {
   returnTo?: string;
+  initialMode?: "signin" | "signup";
 }) {
   const locale = useLocale();
   const t = journalCopy[locale];
   const accountText = accountCopy[locale];
   const { user, loading } = useJournal();
   const [busy, setBusy] = useState(false);
-  const [signup, setSignup] = useState(false);
+  const [signup, setSignup] = useState(initialMode === "signup");
   const [message, setMessage] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
