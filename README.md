@@ -6,7 +6,18 @@
 
 It helps people quickly find something worth doing, then keep the experience as a private Memory with ratings, moods, notes, and photos.
 
-From finalized product design to the lightweight V1, the initial implementation took approximately **8 working hours**.
+## Development effort
+
+Approximate hands-on implementation time so far, excluding product discussion, QA waiting time, and the PWA work currently in progress:
+
+| Version | Approx. implementation effort |
+| --- | ---: |
+| V1 — lightweight MVP | **~8 working hours** |
+| V2 — Memory First / discovery iteration | **~6 working hours** |
+| V3 — Memory Journal / Supabase / photos | **~10 working hours** |
+| **Total to current V3** | **~24 working hours** |
+
+These numbers are rough implementation-time estimates rather than formal timesheets.
 
 - V3 setup: [docs/v3-setup.md](docs/v3-setup.md)
 - Memory Journal design: [docs/myDate_V3_Memory_Journal.md](docs/myDate_V3_Memory_Journal.md)
