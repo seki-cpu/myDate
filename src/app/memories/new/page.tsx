@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { MobileShell } from "../../../components/layout/MobileShell";
 import { useJournal } from "../../../components/memory/JournalProvider";
-import { AccountPanel } from "../../../components/memory/AccountPanel";
+import { AccountRequired } from "../../../components/memory/AccountRequired";
 import { MemoryEditor } from "../../../components/memory/MemoryEditor";
 import { journalCopy } from "../../../components/memory/journalCopy";
 import { useLocale } from "../../../components/ui/locale";
@@ -19,7 +19,7 @@ export default function NewMemoryPage() {
       {loading ? (
         <p>{t.loading}</p>
       ) : !user ? (
-        <AccountPanel returnTo="/memories/new" />
+        <AccountRequired returnTo="/memories/new" />
       ) : (
         <MemoryEditor
           key={user.id}
