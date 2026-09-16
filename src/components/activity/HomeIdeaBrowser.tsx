@@ -10,6 +10,11 @@ interface HomeIdeaBrowserProps {
 }
 
 const batchSize = 3;
+const refreshCopy = {
+  zh: "换一批",
+  en: "Refresh ideas",
+  ja: "入れ替える",
+} as const;
 
 export function HomeIdeaBrowser({ ideas }: HomeIdeaBrowserProps) {
   const [offset, setOffset] = useState(0);
@@ -37,18 +42,25 @@ export function HomeIdeaBrowser({ ideas }: HomeIdeaBrowserProps) {
 
   return (
     <>
+      <div className="section-heading">
+        <h2 className="section-title">{copy.ideas}</h2>
+        {ideas.length > batchSize ? (
+          <button
+            className="section-link"
+            type="button"
+            onClick={showNextBatch}
+            style={{ border: 0, padding: 0, background: "transparent", cursor: "pointer" }}
+          >
+            {refreshCopy[locale]}
+          </button>
+        ) : null}
+      </div>
+
       <div className="activity-list">
         {visibleIdeas.map((idea) => (
           <ActivityCard idea={idea} key={idea.id} />
         ))}
       </div>
-
-      {ideas.length > batchSize ? (
-        <button className="refresh-ideas-button" type="button" onClick={showNextBatch}>
-          <span aria-hidden="true">↻</span>
-          {copy.more}
-        </button>
-      ) : null}
     </>
   );
 }

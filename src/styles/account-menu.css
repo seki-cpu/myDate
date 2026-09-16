@@ -6,6 +6,24 @@
   color: var(--text);
 }
 
+.user-menu-trigger.is-signed-in {
+  overflow: hidden;
+  border-color: rgba(184, 148, 82, 0.24);
+  background: #fbf6e9;
+}
+
+.user-menu-avatar {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border-radius: inherit;
+  color: var(--gold);
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1;
+}
+
 .user-menu-popover {
   position: absolute;
   top: calc(100% + 10px);

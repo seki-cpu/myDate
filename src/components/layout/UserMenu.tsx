@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useJournal } from "../memory/JournalProvider";
 import { setStoredLocale, type Locale, useLocale } from "../ui/locale";
 
 const copy = {
@@ -19,9 +20,12 @@ const localeOptions: Array<{ value: Locale; label: string }> = [
 export function UserMenu() {
   const locale = useLocale();
   const text = copy[locale];
+  const { user } = useJournal();
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const displayName = user?.user_metadata.username ?? user?.email ?? "myDate";
+  const initial = displayName.trim().charAt(0).toUpperCase() || "M";
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -54,7 +58,7 @@ export function UserMenu() {
   return (
     <div className="user-menu" ref={rootRef}>
       <button
-        className="icon-link user-menu-trigger"
+        className={`icon-link user-menu-trigger${user ? " is-signed-in" : ""}`}
         type="button"
         aria-label={text.menu}
         aria-expanded={open}
@@ -64,20 +68,26 @@ export function UserMenu() {
           if (open) setLanguageOpen(false);
         }}
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="8" r="3.2" />
-          <path d="M5.6 19c.7-3.3 3.1-5 6.4-5s5.7 1.7 6.4 5" />
-        </svg>
+        {user ? (
+          <span className="user-menu-avatar" aria-hidden="true">
+            {initial}
+          </span>
+        ) : (
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="8" r="3.2" />
+            <path d="M5.6 19c.7-3.3 3.1-5 6.4-5s5.7 1.7 6.4 5" />
+          </svg>
+        )}
       </button>
 
       {open ? (
