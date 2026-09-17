@@ -6,7 +6,7 @@ import { AccountPanel } from "../../components/memory/AccountPanel";
 import { MobileShell } from "../../components/layout/MobileShell";
 
 function safeReturnTo(value: string | null) {
-  return value?.startsWith("/") ? value : "/";
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/";
 }
 
 function AccountContent() {
